@@ -1,0 +1,36 @@
+{
+  "name": "group36meeting",
+  "issuesValues": {
+    "day": {
+      "values": [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday"
+      ]
+    },
+    "time": {
+      "range": [
+        9,
+        18,
+        1
+      ]
+    },
+    "location": {
+      "values": [
+        "zoom",
+        "google meet",
+        "teams",
+        "jitsi"
+      ]
+    },
+    "duration": {
+      "range": [
+        10,
+        120,
+        10
+      ]
+    }
+  }
+}
