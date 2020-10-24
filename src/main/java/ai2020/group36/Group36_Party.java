@@ -70,7 +70,8 @@ public class Group36_Party extends DefaultParty {
                     lastReceivedBid = ((Offer) otheract).getBid();
                 }
             } else if (info instanceof YourTurn) {          // 1. Bidding phase
-                makeOffer();
+                Action action = makeOffer();
+                getConnection().send(action);
             } else if (info instanceof Voting) {            // 2. Voting phase
                 lastVotes = vote((Voting) info);
                 getConnection().send(lastVotes);
@@ -111,12 +112,10 @@ public class Group36_Party extends DefaultParty {
      * MOPaC Phase 1 - bidding
      * Called whenever it's the agent's turn
      */
-    private void makeOffer() throws IOException {
-        Action action;
+    private Action makeOffer() throws IOException {
         Bid bid = null;
         // TODO
-        action = new Offer(me, bid);
-        getConnection().send(action);
+        return new Offer(me, bid);
     }
 
     /**
