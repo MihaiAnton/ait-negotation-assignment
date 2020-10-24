@@ -42,7 +42,8 @@ public class Group36_Party extends DefaultParty {
     protected ProfileInterface profileint;
     private Progress progress;
     private Settings settings;
-    private Votes lastvotes;
+    private Votes lastVotes;
+    private Votes lastOptedForVotes;
     private String protocol;
 
     public Group36_Party() {
@@ -54,7 +55,36 @@ public class Group36_Party extends DefaultParty {
 
     @Override
     public void notifyChange(Inform info) {
-        // TODO
+        try {
+            if (info instanceof Settings) {
+                Settings settings = (Settings) info;
+                this.profileint = ProfileConnectionFactory
+                        .create(settings.getProfile().getURI(), getReporter());
+                this.me = settings.getID();
+                this.progress = settings.getProgress();
+                this.settings = settings;
+                this.protocol = settings.getProtocol().getURI().getPath();
+            } else if (info instanceof ActionDone) {        // Action completed by other bidder
+                Action otheract = ((ActionDone) info).getAction();
+                if (otheract instanceof Offer) {
+                    lastReceivedBid = ((Offer) otheract).getBid();
+                }
+            } else if (info instanceof YourTurn) {          // 1. Bidding phase
+                makeOffer();
+            } else if (info instanceof Voting) {            // 2. Voting phase
+                lastVotes = vote((Voting) info);
+                getConnection().send(lastVotes);
+            } else if (info instanceof OptIn) {             // 3. OptIn phase
+                lastOptedForVotes = optIn((Voting) info);
+                getConnection().send(lastOptedForVotes);
+            } else if (info instanceof Finished) {          // 4. Negotiation finished
+                getReporter().log(Level.INFO, "Final outcome:" + info);
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to handle info", e);
+        }
+        updateRound(info);
     }
 
     @Override
@@ -65,25 +95,28 @@ public class Group36_Party extends DefaultParty {
 
     @Override
     public String getDescription() {
-        // TODO
-        return "";
+        return "Party for group 36 - description of our awesome party"; //TODO
     }
 
     /**
-     * Update {@link #progress}
+     * Update session progress
      *
-     * @param info the received info. Used to determine if this is the last info
-     *             of the round
+     * @param info the received info. Used to determine if this is the last info of the round
      */
     private void updateRound(Inform info) {
         // TODO
     }
 
     /**
-     * send our next offer
+     * MOPaC Phase 1 - bidding
+     * Called whenever it's the agent's turn
      */
     private void makeOffer() throws IOException {
+        Action action;
+        Bid bid = null;
         // TODO
+        action = new Offer(me, bid);
+        getConnection().send(action);
     }
 
     /**
@@ -96,11 +129,26 @@ public class Group36_Party extends DefaultParty {
     }
 
     /**
-     * @param voting the {@link Voting} object containing the options
+     * MOPaC Phase 2 - voting
+     *
+     * @param voting the Voting object containing the options
      * @return our next Votes.
      */
     private Votes vote(Voting voting) throws IOException {
-       // TODO
+        // TODO
+
+        Set<Vote> votes = new HashSet<>();
+        return new Votes(me, votes);
+    }
+
+    /**
+     * MOPaC Phase 3 - opting in
+     *
+     * @param voting the Voting object containing the options
+     * @return our next Votes.
+     */
+    private Votes optIn(Voting voting) throws IOException {
+        // TODO
 
         Set<Vote> votes = new HashSet<>();
         return new Votes(me, votes);

@@ -59,7 +59,7 @@ public class Group36_PartyTest {
     @Before
     public void before() throws JsonParseException, JsonMappingException,
             IOException, URISyntaxException {
-        party = new RandomParty1();
+        party = new Group36_Party();
         settings = new Settings(PARTY1,
                 new ProfileRef(new URI("file:" + PROFILE)), protocol, progress,
                 parameters);
