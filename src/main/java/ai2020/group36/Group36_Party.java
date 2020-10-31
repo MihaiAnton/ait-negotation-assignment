@@ -35,7 +35,6 @@ import geniusweb.progress.ProgressRounds;
 import tudelft.utilities.logging.Reporter;
 
 public class Group36_Party extends DefaultParty {
-
     private PartyId partyid;
     protected ProfileInterface profileinterface;
     //	private Progress progress;
@@ -43,7 +42,13 @@ public class Group36_Party extends DefaultParty {
     private Integer maxpower;
     private Integer minpower;
 
-    private Votes lastvotes;
+    private Map<Integer, Votes> votes = new HashMap<Integer, Votes>();
+    private Map<Integer, List<Offer>> receivedOffers = new HashMap<Integer, List<Offer>>();
+    private Map<Integer, Map<PartyId, Integer>> receivedPowers = new HashMap<Integer, Map<PartyId, Integer>>(); // Unsure if powers stay the same
+    private Map<Integer, List<Votes>> receivedVotes = new HashMap<Integer, List<Votes>>();
+
+    private int round = 0;
+
 
     public Group36_Party()
     {
@@ -88,6 +93,8 @@ public class Group36_Party extends DefaultParty {
             else if (info instanceof YourTurn)
             {
                 this.getConnection().send(this.makeOffer());
+                this.round += 1;
+                this.getReporter().log(Level.INFO, "Current round:" + Integer.toString(this.round));
             }
             else if (info instanceof Voting)
             {
@@ -157,12 +164,18 @@ public class Group36_Party extends DefaultParty {
 
     private Votes vote(Voting voting) throws IOException
     {
+        // Save received offers and powers
+        this.receivedOffers.put(this.round, voting.getBids());
+        this.receivedPowers.put(this.round, voting.getPowers());
+
+        // Create our own votes
         Set<Vote> votes = voting.getBids().stream().distinct()
                 .filter(offer -> isGood(offer.getBid()))
                 .map(offer -> new Vote(this.partyid, offer.getBid(), this.minpower, this.maxpower))
                 .collect(Collectors.toSet());
 
-        this.lastvotes = new Votes(this.partyid, votes);
+        // Save our own votes
+        this.votes.put(this.round, new Votes(this.partyid, votes));
 
         return new Votes(this.partyid, votes);
     }
@@ -170,7 +183,10 @@ public class Group36_Party extends DefaultParty {
     // TODO
     private Votes optIn(OptIn optin) throws IOException
     {
+        // Save received votes
+        this.receivedVotes.put(this.round, optin.getVotes());
+
         // Temporarily
-        return this.lastvotes;
+        return this.votes.get(this.round);
     }
 }
