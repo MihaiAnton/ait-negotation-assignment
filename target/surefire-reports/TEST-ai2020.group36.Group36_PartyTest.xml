@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite tests="14" failures="0" name="ai2020.group36.Group36_PartyTest" time="0.19" errors="0" skipped="0">
+  <properties>
+    <property name="java.runtime.name" value="OpenJDK Runtime Environment"/>
+    <property name="sun.boot.library.path" value="/Users/mihai/Library/Java/JavaVirtualMachines/corretto-1.8.0_265/Contents/Home/jre/lib"/>
+    <property name="java.vm.version" value="25.265-b01"/>
+    <property name="gopherProxySet" value="false"/>
+    <property name="java.vm.vendor" value="Amazon.com Inc."/>
+    <property name="maven.multiModuleProjectDirectory" value="/Users/mihai/Documents/School/TUDelft/AITechniques/NegotiationAssignment/ait-negotation-assignment"/>
+    <property name="java.vendor.url" value="https://aws.amazon.com/corretto/"/>
+    <property name="path.separator" value=":"/>
+    <property name="guice.disable.misplaced.annotation.check" value="true"/>
+    <property name="java.vm.name" value="OpenJDK 64-Bit Server VM"/>
+    <property name="file.encoding.pkg" value="sun.io"/>
+    <property name="user.country" value="RO"/>
+    <property name="sun.java.launcher" value="SUN_STANDARD"/>
+    <property name="sun.os.patch.level" value="unknown"/>
+    <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+    <property name="user.dir" value="/Users/mihai/Documents/School/TUDelft/AITechniques/NegotiationAssignment/ait-negotation-assignment"/>
+    <property name="java.runtime.version" value="1.8.0_265-b01"/>
+    <property name="java.awt.graphicsenv" value="sun.awt.CGraphicsEnvironment"/>
+    <property name="java.endorsed.dirs" value="/Users/mihai/Library/Java/JavaVirtualMachines/corretto-1.8.0_265/Contents/Home/jre/lib/endorsed"/>
+    <property name="os.arch" value="x86_64"/>
+    <property name="java.io.tmpdir" value="/var/folders/cg/2bq8y63x3bs3l27kr1ljqnw00000gn/T/"/>
+    <property name="line.separator" value="
+"/>
+    <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
+    <property name="os.name" value="Mac OS X"/>
+    <property name="classworlds.conf" value="/usr/local/Cellar/maven/3.6.3_1/libexec/bin/m2.conf"/>
+    <property name="sun.jnu.encoding" value="UTF-8"/>
+    <property name="java.library.path" value="/Users/mihai/Library/Java/Extensions:/Library/Java/Extensions:/Network/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java:."/>
+    <property name="maven.conf" value="/usr/local/Cellar/maven/3.6.3_1/libexec/conf"/>
+    <property name="java.specification.name" value="Java Platform API Specification"/>
+    <property name="java.class.version" value="52.0"/>
+    <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
+    <property name="os.version" value="10.15.7"/>
+    <property name="library.jansi.path" value="/usr/local/Cellar/maven/3.6.3_1/libexec/lib/jansi-native"/>
+    <property name="http.nonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
+    <property name="user.home" value="/Users/mihai"/>
+    <property name="user.timezone" value="Europe/Amsterdam"/>
+    <property name="java.awt.printerjob" value="sun.lwawt.macosx.CPrinterJob"/>
+    <property name="java.specification.version" value="1.8"/>
+    <property name="file.encoding" value="UTF-8"/>
+    <property name="buildInfoConfig.propertiesFile" value="/private/var/folders/cg/2bq8y63x3bs3l27kr1ljqnw00000gn/T/buildInfo2036275695594970344.properties"/>
+    <property name="user.name" value="mihai"/>
+    <property name="java.class.path" value="/usr/local/Cellar/maven/3.6.3_1/libexec/boot/plexus-classworlds-2.6.0.jar"/>
+    <property name="java.vm.specification.version" value="1.8"/>
+    <property name="sun.arch.data.model" value="64"/>
+    <property name="java.home" value="/Users/mihai/Library/Java/JavaVirtualMachines/corretto-1.8.0_265/Contents/Home/jre"/>
+    <property name="sun.java.command" value="org.codehaus.plexus.classworlds.launcher.Launcher package"/>
+    <property name="java.specification.vendor" value="Oracle Corporation"/>
+    <property name="user.language" value="en"/>
+    <property name="awt.toolkit" value="sun.lwawt.macosx.LWCToolkit"/>
+    <property name="java.vm.info" value="mixed mode"/>
+    <property name="java.version" value="1.8.0_265"/>
+    <property name="java.ext.dirs" value="/Users/mihai/Library/Java/Extensions:/Users/mihai/Library/Java/JavaVirtualMachines/corretto-1.8.0_265/Contents/Home/jre/lib/ext:/Library/Java/Extensions:/Network/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java"/>
+    <property name="sun.boot.class.path" value="/Users/mihai/Library/Java/JavaVirtualMachines/corretto-1.8.0_265/Contents/Home/jre/lib/resources.jar:/Users/mihai/Library/Java/JavaVirtualMachines/corretto-1.8.0_265/Contents/Home/jre/lib/rt.jar:/Users/mihai/Library/Java/JavaVirtualMachines/corretto-1.8.0_265/Contents/Home/jre/lib/sunrsasign.jar:/Users/mihai/Library/Java/JavaVirtualMachines/corretto-1.8.0_265/Contents/Home/jre/lib/jsse.jar:/Users/mihai/Library/Java/JavaVirtualMachines/corretto-1.8.0_265/Contents/Home/jre/lib/jce.jar:/Users/mihai/Library/Java/JavaVirtualMachines/corretto-1.8.0_265/Contents/Home/jre/lib/charsets.jar:/Users/mihai/Library/Java/JavaVirtualMachines/corretto-1.8.0_265/Contents/Home/jre/lib/jfr.jar:/Users/mihai/Library/Java/JavaVirtualMachines/corretto-1.8.0_265/Contents/Home/jre/classes"/>
+    <property name="java.vendor" value="Amazon.com Inc."/>
+    <property name="maven.home" value="/usr/local/Cellar/maven/3.6.3_1/libexec"/>
+    <property name="file.separator" value="/"/>
+    <property name="java.vendor.url.bug" value="https://github.com/corretto/corretto-8/issues/"/>
+    <property name="sun.cpu.endian" value="little"/>
+    <property name="sun.io.unicode.encoding" value="UnicodeBig"/>
+    <property name="socksNonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
+    <property name="ftp.nonProxyHosts" value="local|*.local|169.254/16|*.169.254/16"/>
+    <property name="sun.cpu.isalist" value=""/>
+  </properties>
+  <testcase classname="ai2020.group36.Group36_PartyTest" name="smokeTest" time="0.185"/>
+  <testcase classname="ai2020.group36.Group36_PartyTest" name="testInformSettings" time="0"/>
+  <testcase classname="ai2020.group36.Group36_PartyTest" name="testInformAndConnection" time="0.001"/>
+  <testcase classname="ai2020.group36.Group36_PartyTest" name="testAgentsUpdatesMOPACProgress" time="0"/>
+  <testcase classname="ai2020.group36.Group36_PartyTest" name="testGetCapabilities" time="0"/>
+  <testcase classname="ai2020.group36.Group36_PartyTest" name="testAgentLogsFinal" time="0"/>
+  <testcase classname="ai2020.group36.Group36_PartyTest" name="getDescriptionTest" time="0.001"/>
+  <testcase classname="ai2020.group36.Group36_PartyTest" name="testAgentsUpdatesSAOPProgress" time="0.001"/>
+  <testcase classname="ai2020.group36.Group36_PartyTest" name="testOtherWalksAway" time="0"/>
+  <testcase classname="ai2020.group36.Group36_PartyTest" name="testAgentHasFirstTurn" time="0"/>
+  <testcase classname="ai2020.group36.Group36_PartyTest" name="testAgentAccepts" time="0"/>
+  <testcase classname="ai2020.group36.Group36_PartyTest" name="testInformConnection" time="0.001"/>
+  <testcase classname="ai2020.group36.Group36_PartyTest" name="testVoting" time="0.001"/>
+  <testcase classname="ai2020.group36.Group36_PartyTest" name="getCapabilitiesTest" time="0"/>
+</testsuite>
