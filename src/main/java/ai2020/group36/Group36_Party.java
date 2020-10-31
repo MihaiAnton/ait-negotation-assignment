@@ -26,6 +26,7 @@ import geniusweb.inform.YourTurn;
 import geniusweb.issuevalue.Bid;
 import geniusweb.party.Capabilities;
 import geniusweb.party.DefaultParty;
+import geniusweb.party.Party;
 import geniusweb.profile.PartialOrdering;
 import geniusweb.profile.Profile;
 import geniusweb.profile.utilityspace.UtilitySpace;
@@ -49,7 +50,7 @@ public class Group36_Party extends DefaultParty {
 
     private Bid reservationBid;
     private double reservationValue;
-    double FORGET_RATE = 0.9;
+    double FORGET_RATE = 0.2;
     int issueCount;
 
     Map<PartyId, Integer> powers = new HashMap<>();
@@ -150,6 +151,9 @@ public class Group36_Party extends DefaultParty {
     }
 
     /**
+     * The agent will split the difference between it's reservation value in 4 and pick the bid
+     * that is the closest to the 3rd quarter of the split
+     * In case of error in finding such a value, the agent returns a random bid.
      * MOPaC Phase 1 - bidding
      * Called whenever it's the agent's turn
      */
@@ -191,11 +195,16 @@ public class Group36_Party extends DefaultParty {
     }
 
     /**
+     * Check whether or not a bid is good, which mean the following:
+     * - the bid is valid
+     * - the bid contains all the issues
+     * - the utility of the bid is larger than the reservation value
+     *
      * @param bid the bid to check
      * @return true iff bid is good for us.
      */
     private boolean isGood(Bid bid) {
-        if (bid == null) {
+        if (bid == null || bid.getIssues().size() < this.issueCount) {
             return false;
         }
         Profile profile;
@@ -213,9 +222,15 @@ public class Group36_Party extends DefaultParty {
         return false;
     }
 
+    /**
+     * Computes the minimum acceptance power of the agent, which is the sum of the powers of
+     * the most powerful 50% parties.
+     *
+     * @return integer representing minimum power
+     */
     private int getMinPower() {
 
-        List<Integer> list = this.powers.values().stream().collect(Collectors.toList());
+        List<Integer> list = new ArrayList<>(this.powers.values());
         int power = 0;
         int toConsider = Integer.max(1, (int) (list.size() / 2));
 
@@ -228,6 +243,7 @@ public class Group36_Party extends DefaultParty {
 
     /**
      * MOPaC Phase 2 - voting
+     * Returns a list of votes based on the minimum and maximum power values and the reservation value.
      *
      * @param voting the Voting object containing the options
      * @return our next Votes.
@@ -252,6 +268,7 @@ public class Group36_Party extends DefaultParty {
 
     /**
      * MOPaC Phase 3 - opting in
+     * Accepts all the previous bids + the bids for which there is a chance of forming a partial consensus.
      *
      * @param voting the Voting object containing the options
      * @return our next Votes.
@@ -290,7 +307,10 @@ public class Group36_Party extends DefaultParty {
 
         for (Votes _votes : voting.getVotes()) {
             for (Vote vote : _votes.getVotes()) {
-                if (getBidUtility(this.profileint.getProfile(), vote.getBid()) >= this.reservationValue && !bids.contains(vote.getBid())) {
+                if (willFormConsensus(voting, vote.getBid(), this.minPower) && !bids.contains(vote.getBid())) {
+                    // don't be left out
+                    bids.add(vote.getBid());
+                } else if (getBidUtility(this.profileint.getProfile(), vote.getBid()) >= this.reservationValue && !bids.contains(vote.getBid())) {
                     bids.add(vote.getBid());
                 }
             }
@@ -302,6 +322,32 @@ public class Group36_Party extends DefaultParty {
         }
 
         return new Votes(me, votes);
+    }
+
+    /**
+     * Checks whether a (partial) consensus will be formed on the bid.
+     * Checks that the sum of powers of the parties that voted for it is greater that a certain minimum threshold.
+     *
+     * @param optin    the votes in the opt in phase
+     * @param bid      the bid to check for
+     * @param minPower the minimum power for accepting the bid
+     * @return true if it will for consensus
+     */
+    private boolean willFormConsensus(OptIn optin, Bid bid, int minPower) {
+        Set<PartyId> parties = new HashSet<>();
+        int powerOfBidders = 0;
+
+        for (Votes votes : optin.getVotes()) {
+            for (Vote vote : votes.getVotes()) {
+                if (vote.getBid() == bid) {
+                    PartyId partyId = vote.getActor();
+                    powerOfBidders += this.powers.get(partyId);
+                    break;
+                }
+            }
+        }
+
+        return powerOfBidders >= minPower;
     }
 
     /**
