@@ -36,73 +36,141 @@ import tudelft.utilities.logging.Reporter;
 
 public class Group36_Party extends DefaultParty {
 
-    private Bid lastReceivedBid = null;
-    private PartyId me;
-    private final Random random = new Random();
-    protected ProfileInterface profileint;
-    private Progress progress;
-    private Settings settings;
+    private PartyId partyid;
+    protected ProfileInterface profileinterface;
+    //	private Progress progress;
+//	private String protocol;
+    private Integer maxpower;
+    private Integer minpower;
+
     private Votes lastvotes;
-    private String protocol;
 
-    public Group36_Party() {
+    public Group36_Party()
+    {
+        super();
     }
 
-    public Group36_Party(Reporter reporter) {
-        super(reporter); // for debugging
-    }
-
-    @Override
-    public void notifyChange(Inform info) {
-        // TODO
+    public Group36_Party(Reporter reporter)
+    {
+        super(reporter);
     }
 
     @Override
-    public Capabilities getCapabilities() {
-        return new Capabilities(
-                new HashSet<>(Collections.singletonList("MOPAC")));
+    public String getDescription()
+    {
+        return "TODO: draft agent";
     }
 
     @Override
-    public String getDescription() {
-        // TODO
-        return "";
+    public Capabilities getCapabilities()
+    {
+        return new Capabilities(new HashSet<>(Arrays.asList("MOPAC", "SAOP")));
     }
 
-    /**
-     * Update {@link #progress}
-     *
-     * @param info the received info. Used to determine if this is the last info
-     *             of the round
-     */
-    private void updateRound(Inform info) {
-        // TODO
+    @Override
+    public void notifyChange(Inform info)
+    {
+        try
+        {
+            if (info instanceof Settings)
+            {
+                Settings settings = (Settings) info;
+
+                this.partyid = settings.getID();
+                this.profileinterface = ProfileConnectionFactory.create(settings.getProfile().getURI(), getReporter());
+//				this.progress = settings.getProgress();
+//				this.protocol = settings.getProtocol().getURI().getPath();
+                Object val = settings.getParameters().get("minPower");
+                this.minpower = (val instanceof Integer) ? (Integer) val : 2;
+                Object val2 = settings.getParameters().get("maxPower");
+                this.maxpower = (val2 instanceof Integer) ? (Integer) val2 : Integer.MAX_VALUE;
+            }
+            else if (info instanceof YourTurn)
+            {
+                this.getConnection().send(this.makeOffer());
+            }
+            else if (info instanceof Voting)
+            {
+                this.getConnection().send(this.vote((Voting) info));
+            }
+            else if (info instanceof OptIn)
+            {
+                this.getConnection().send(this.optIn((OptIn) info));
+            }
+            else if (info instanceof Finished)
+            {
+                this.getReporter().log(Level.INFO, "Final ourcome:" + info);
+            }
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException("Failed to handle info", e);
+        }
     }
 
-    /**
-     * send our next offer
-     */
-    private void makeOffer() throws IOException {
-        // TODO
+    // TODO
+    private Offer makeOffer() throws IOException
+    {
+        // for demo. Obviously full bids have higher util in general
+        AllPartialBidsList bidspace = new AllPartialBidsList(this.profileinterface.getProfile().getDomain());
+        Bid bid = null;
+        for (int attempt = 0; attempt < 20 && !isGood(bid); attempt ++)
+        {
+            long i = new Random().nextInt(bidspace.size().intValue());
+            bid = bidspace.get(BigInteger.valueOf(i));
+        }
+        return new Offer(this.partyid, bid);
     }
 
-    /**
-     * @param bid the bid to check
-     * @return true iff bid is good for us.
-     */
-    private boolean isGood(Bid bid) {
-        // TODO
-        return false;
+    private boolean isGood(Bid bid)
+    {
+        if (bid == null)
+        {
+            return false;
+        }
+        else
+        {
+            Profile profile;
+            try
+            {
+                profile = this.profileinterface.getProfile();
+            }
+            catch (IOException e)
+            {
+                throw new IllegalStateException(e);
+            }
+
+            if (profile instanceof UtilitySpace)
+            {
+                return ((UtilitySpace) profile).getUtility(bid).doubleValue() > 0.6;
+            }
+            else if (profile instanceof PartialOrdering) // Do we need this??
+            {
+                return ((PartialOrdering) profile).isPreferredOrEqual(bid, profile.getReservationBid());
+            }
+            else
+            {
+                return false;
+            }
+        }
     }
 
-    /**
-     * @param voting the {@link Voting} object containing the options
-     * @return our next Votes.
-     */
-    private Votes vote(Voting voting) throws IOException {
-       // TODO
+    private Votes vote(Voting voting) throws IOException
+    {
+        Set<Vote> votes = voting.getBids().stream().distinct()
+                .filter(offer -> isGood(offer.getBid()))
+                .map(offer -> new Vote(this.partyid, offer.getBid(), this.minpower, this.maxpower))
+                .collect(Collectors.toSet());
 
-        Set<Vote> votes = new HashSet<>();
-        return new Votes(me, votes);
+        this.lastvotes = new Votes(this.partyid, votes);
+
+        return new Votes(this.partyid, votes);
+    }
+
+    // TODO
+    private Votes optIn(OptIn optin) throws IOException
+    {
+        // Temporarily
+        return this.lastvotes;
     }
 }
