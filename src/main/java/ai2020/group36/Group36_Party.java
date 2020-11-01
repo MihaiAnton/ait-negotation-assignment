@@ -1,6 +1,5 @@
 package ai2020.group36;
 
-import geniusweb.bidspace.pareto.ParetoLinearAdditive;
 import geniusweb.party.DefaultParty;
 
 import java.io.IOException;
@@ -25,8 +24,6 @@ import geniusweb.inform.Voting;
 import geniusweb.inform.YourTurn;
 import geniusweb.issuevalue.Bid;
 import geniusweb.party.Capabilities;
-import geniusweb.party.DefaultParty;
-import geniusweb.party.Party;
 import geniusweb.profile.PartialOrdering;
 import geniusweb.profile.Profile;
 import geniusweb.profile.utilityspace.UtilitySpace;
@@ -57,8 +54,6 @@ public class Group36_Party extends DefaultParty {
     boolean powersSet = false;
     int minPower = 0;
     int maxPower = 0;
-    double MIN_POWER_INCREASE = 1.5;
-    double MAX_POWER_INCREASE = 1;
 
     public Group36_Party() {
     }
@@ -152,7 +147,7 @@ public class Group36_Party extends DefaultParty {
 
     /**
      * The agent will split the difference between it's reservation value in 4 and pick the bid
-     * that is the closest to the 3rd quarter of the split
+     * that is the closest to the 3rd quarter of the split, being 3/4 'selfish'.
      * In case of error in finding such a value, the agent returns a random bid.
      * MOPaC Phase 1 - bidding
      * Called whenever it's the agent's turn
@@ -249,19 +244,18 @@ public class Group36_Party extends DefaultParty {
      * @return our next Votes.
      */
     private Votes vote(Voting voting) throws IOException {
-        if (!powersSet) {
+        if (!powersSet) {                   // set the information regarding the powers involved
             this.powers = voting.getPowers();
             this.minPower = getMinPower();
             this.maxPower = this.powers.values().stream().reduce(0, Integer::sum);
-
             powersSet = true;
         }
 
-        int maxPower = (int) (this.reservationValue * this.maxPower * MAX_POWER_INCREASE);
+        int maxPower = (int) (this.reservationValue * this.maxPower);   // adaptive maximum power
 
         Set<Vote> votes = voting.getBids().stream().distinct()
                 .filter(offer -> isGood(offer.getBid()))
-                .map(offer -> new Vote(me, offer.getBid(), (int) (this.minPower * MIN_POWER_INCREASE), 1 + Math.max((int) (this.minPower * MIN_POWER_INCREASE), maxPower)))
+                .map(offer -> new Vote(me, offer.getBid(), this.minPower, 1 + Math.max(this.minPower, maxPower)))
                 .collect(Collectors.toSet());
         return new Votes(me, votes);
     }
@@ -300,25 +294,25 @@ public class Group36_Party extends DefaultParty {
 
         Set<Bid> bids = new HashSet<>();
 
-        for (Vote vote : this.lastVotes.getVotes()) {
+        for (Vote vote : this.lastVotes.getVotes()) {           // add the votes already votred for
             bids.add(vote.getBid());
         }
-        int maxPower = (int) (this.reservationValue * this.maxPower * MAX_POWER_INCREASE);
+        int maxPower = (int) (this.reservationValue * this.maxPower);
 
-        for (Votes _votes : voting.getVotes()) {
-            for (Vote vote : _votes.getVotes()) {
-                if (willFormConsensus(voting, vote.getBid(), this.minPower) && !bids.contains(vote.getBid())) {
-                    // don't be left out
+        for (Votes _votes : voting.getVotes()) {                // for each new vote, add it if it's not in the set already
+            for (Vote vote : _votes.getVotes()) {               // and if either has a high probability of forming a consensus or if it is acceptable
+                if (!bids.contains(vote.getBid()) &&
+                        (willFormConsensus(voting, vote.getBid(), this.minPower) ||
+                                getBidUtility(this.profileint.getProfile(), vote.getBid()) >= this.reservationValue))
+
                     bids.add(vote.getBid());
-                } else if (getBidUtility(this.profileint.getProfile(), vote.getBid()) >= this.reservationValue && !bids.contains(vote.getBid())) {
-                    bids.add(vote.getBid());
-                }
             }
         }
 
+        // convert bids to votes
         Set<Vote> votes = new HashSet<>();
         for (Bid bid : bids) {
-            votes.add(new Vote(me, bid, (int) (MIN_POWER_INCREASE * this.minPower), 1 + Math.max((int) (MIN_POWER_INCREASE * this.minPower), maxPower)));
+            votes.add(new Vote(me, bid, this.minPower, 1 + Math.max(this.minPower, maxPower)));
         }
 
         return new Votes(me, votes);
@@ -326,7 +320,7 @@ public class Group36_Party extends DefaultParty {
 
     /**
      * Checks whether a (partial) consensus will be formed on the bid.
-     * Checks that the sum of powers of the parties that voted for it is greater that a certain minimum threshold.
+     * Checks if the sum of powers of the parties that voted for it is greater than a certain minimum threshold.
      *
      * @param optin    the votes in the opt in phase
      * @param bid      the bid to check for
@@ -334,20 +328,19 @@ public class Group36_Party extends DefaultParty {
      * @return true if it will for consensus
      */
     private boolean willFormConsensus(OptIn optin, Bid bid, int minPower) {
-        Set<PartyId> parties = new HashSet<>();
-        int powerOfBidders = 0;
+        int sumOfPowers = 0;
 
         for (Votes votes : optin.getVotes()) {
             for (Vote vote : votes.getVotes()) {
                 if (vote.getBid() == bid) {
                     PartyId partyId = vote.getActor();
-                    powerOfBidders += this.powers.get(partyId);
+                    sumOfPowers += this.powers.get(partyId);
                     break;
                 }
             }
         }
 
-        return powerOfBidders >= minPower;
+        return sumOfPowers >= minPower;
     }
 
     /**
