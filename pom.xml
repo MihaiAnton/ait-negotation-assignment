@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>ai2020.group36</groupId>
-	<artifactId>Group36_Main</artifactId>
+	<artifactId>Group36_Party</artifactId>
 	<version>1.5.5</version> <!-- must equal ${geniusweb.version} -->
 	<packaging>jar</packaging>
 
@@ -177,7 +177,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>ai2020.group36.Group36_Main</mainClass>
+							<mainClass>ai2020.group36.groupparty</mainClass>
 						</manifest>
 					</archive>
 				</configuration>
@@ -232,7 +232,7 @@
 						<manifest>
 							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
 							<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-							<mainClass>ai2020.group36.Group36_Main</mainClass>
+							<mainClass>ai2020.group36.Group36_Party</mainClass>
 						</manifest>
 					</archive>
 				</configuration>

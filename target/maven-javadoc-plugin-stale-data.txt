@@ -1,0 +1,56 @@
+/Users/mihai/Library/Java/JavaVirtualMachines/corretto-1.8.0_265/Contents/Home/jre/../bin/javadoc
+@options
+@packages
+-classpath
+'/Users/mihai/.m2/repository/geniusweb/party/1.5.5/party-1.5.5.jar:/Users/mihai/.m2/repository/geniusweb/timeline/1.5.5/timeline-1.5.5.jar:/Users/mihai/.m2/repository/geniusweb/profile/1.5.5/profile-1.5.5.jar:/Users/mihai/.m2/repository/geniusweb/issuevalue/1.5.5/issuevalue-1.5.5.jar:/Users/mihai/.m2/repository/geniusweb/events/1.5.5/events-1.5.5.jar:/Users/mihai/.m2/repository/geniusweb/references/1.5.5/references-1.5.5.jar:/Users/mihai/.m2/repository/tudelft/utilities/repository/1.1.1/repository-1.1.1.jar:/Users/mihai/.m2/repository/tudelft/utilities/tree/1.1.1/tree-1.1.1.jar:/Users/mihai/.m2/repository/tudelft/utilities/listener/1.1.0/listener-1.1.0.jar:/Users/mihai/.m2/repository/geniusweb/bidspace/1.5.5/bidspace-1.5.5.jar:/Users/mihai/.m2/repository/geniusweb/profileconnection/1.5.5/profileconnection-1.5.5.jar:/Users/mihai/.m2/repository/javax/websocket/javax.websocket-api/1.1/javax.websocket-api-1.1.jar:/Users/mihai/.m2/repository/tudelft/utilities/logging/1.0.0/logging-1.0.0.jar:/Users/mihai/.m2/repository/tudelft/utilities/immutablelist/1.1.1/immutablelist-1.1.1.jar'
+-encoding
+'UTF-8'
+-protected
+-sourcepath
+'/Users/mihai/Documents/School/TUDelft/AITechniques/NegotiationAssignment/ait-negotation-assignment/src/main/java:/Users/mihai/Documents/School/TUDelft/AITechniques/NegotiationAssignment/ait-negotation-assignment/target/generated-sources/annotations'
+-author
+-bottom
+'Copyright &#169; 2020. All rights reserved.'
+-charset
+'UTF-8'
+-d
+'/Users/mihai/Documents/School/TUDelft/AITechniques/NegotiationAssignment/ait-negotation-assignment/target/apidocs'
+-docencoding
+'UTF-8'
+-doctitle
+'Group36_Party 1.5.5 API'
+-linkoffline
+'https://docs.oracle.com/javase/8/docs/api' '/Users/mihai/Documents/School/TUDelft/AITechniques/NegotiationAssignment/ait-negotation-assignment/target/javadoc-bundle-options'
+-use
+-version
+-windowtitle
+'Group36_Party 1.5.5 API'
+ai2020.group36
+/Users/mihai/.m2/repository/geniusweb/party/1.5.5/party-1.5.5.jar = 1603355068000
+/Users/mihai/.m2/repository/geniusweb/timeline/1.5.5/timeline-1.5.5.jar = 1603355068000
+/Users/mihai/.m2/repository/geniusweb/profile/1.5.5/profile-1.5.5.jar = 1603355068000
+/Users/mihai/.m2/repository/geniusweb/issuevalue/1.5.5/issuevalue-1.5.5.jar = 1603355068000
+/Users/mihai/.m2/repository/geniusweb/events/1.5.5/events-1.5.5.jar = 1603355068000
+/Users/mihai/.m2/repository/geniusweb/references/1.5.5/references-1.5.5.jar = 1603355068000
+/Users/mihai/.m2/repository/tudelft/utilities/repository/1.1.1/repository-1.1.1.jar = 1603355068000
+/Users/mihai/.m2/repository/tudelft/utilities/tree/1.1.1/tree-1.1.1.jar = 1603355068000
+/Users/mihai/.m2/repository/tudelft/utilities/listener/1.1.0/listener-1.1.0.jar = 1603355068000
+/Users/mihai/.m2/repository/geniusweb/bidspace/1.5.5/bidspace-1.5.5.jar = 1603355068000
+/Users/mihai/.m2/repository/geniusweb/profileconnection/1.5.5/profileconnection-1.5.5.jar = 1603355069000
+/Users/mihai/.m2/repository/javax/websocket/javax.websocket-api/1.1/javax.websocket-api-1.1.jar = 1603355069000
+/Users/mihai/.m2/repository/tudelft/utilities/logging/1.0.0/logging-1.0.0.jar = 1603355069000
+/Users/mihai/.m2/repository/tudelft/utilities/immutablelist/1.1.1/immutablelist-1.1.1.jar = 1603355069000
+/Users/mihai/Documents/School/TUDelft/AITechniques/NegotiationAssignment/ait-negotation-assignment/src/main/java/.DS_Store = 1603374053000
+/Users/mihai/Documents/School/TUDelft/AITechniques/NegotiationAssignment/ait-negotation-assignment/src/main/java = 1603558860000
+/Users/mihai/Documents/School/TUDelft/AITechniques/NegotiationAssignment/ait-negotation-assignment/target/generated-sources/annotations = 1603539114000
+/Users/mihai/Documents/School/TUDelft/AITechniques/NegotiationAssignment/ait-negotation-assignment/target/apidocs/constant-values.html = 1604141787000
+/Users/mihai/Documents/School/TUDelft/AITechniques/NegotiationAssignment/ait-negotation-assignment/target/apidocs/overview-tree.html = 1604141787000
+/Users/mihai/Documents/School/TUDelft/AITechniques/NegotiationAssignment/ait-negotation-assignment/target/apidocs/index.html = 1604141787000
+/Users/mihai/Documents/School/TUDelft/AITechniques/NegotiationAssignment/ait-negotation-assignment/target/apidocs/allclasses-noframe.html = 1604141787000
+/Users/mihai/Documents/School/TUDelft/AITechniques/NegotiationAssignment/ait-negotation-assignment/target/apidocs/index-all.html = 1604141787000
+/Users/mihai/Documents/School/TUDelft/AITechniques/NegotiationAssignment/ait-negotation-assignment/target/apidocs/deprecated-list.html = 1604141787000
+/Users/mihai/Documents/School/TUDelft/AITechniques/NegotiationAssignment/ait-negotation-assignment/target/apidocs/script.js = 1604141787000
+/Users/mihai/Documents/School/TUDelft/AITechniques/NegotiationAssignment/ait-negotation-assignment/target/apidocs/stylesheet.css = 1604138462000
+/Users/mihai/Documents/School/TUDelft/AITechniques/NegotiationAssignment/ait-negotation-assignment/target/apidocs/help-doc.html = 1604141787000
+/Users/mihai/Documents/School/TUDelft/AITechniques/NegotiationAssignment/ait-negotation-assignment/target/apidocs/allclasses-frame.html = 1604141787000
+/Users/mihai/Documents/School/TUDelft/AITechniques/NegotiationAssignment/ait-negotation-assignment/target/apidocs/package-list = 1604141787000
