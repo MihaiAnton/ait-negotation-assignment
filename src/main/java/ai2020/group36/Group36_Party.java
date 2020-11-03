@@ -1,21 +1,24 @@
-package ai2020.group36;
-
-import geniusweb.party.DefaultParty;
+package ait.parties.agent36;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
-import geniusweb.actions.Accept;
-import geniusweb.actions.Action;
 import geniusweb.actions.Offer;
 import geniusweb.actions.PartyId;
 import geniusweb.actions.Vote;
 import geniusweb.actions.Votes;
 import geniusweb.bidspace.AllPartialBidsList;
-import geniusweb.inform.ActionDone;
 import geniusweb.inform.Finished;
 import geniusweb.inform.Inform;
 import geniusweb.inform.OptIn;
@@ -34,75 +37,308 @@ import geniusweb.progress.Progress;
 import geniusweb.progress.ProgressRounds;
 import tudelft.utilities.logging.Reporter;
 
-public class Group36_Party extends DefaultParty {
-
-    private Bid lastReceivedBid = null;
-    private PartyId me;
-    private final Random random = new Random();
-    protected ProfileInterface profileint;
+/**
+ * MOPaC Negotiation Agent
+ *
+ * @authors Mihai Anton, Richard de Jong, Luc Lenferink, Stefan Pretrescu
+ */
+public class Agent36 extends DefaultParty {
+    private PartyId partyid;
+    protected ProfileInterface profileinterface;
     private Progress progress;
-    private Settings settings;
-    private Votes lastvotes;
-    private String protocol;
+    private Votes lastVotes;
+    private int issueCount;
+    private final Random random = new Random();
+    private double reservationValue = 0.0;
+    private double FORGET_RATE = 0.2;
+    private boolean arePowersSet = false;
+    private Map<PartyId, Integer> powers = new HashMap<>();
+    private int minPower = 0;
+    private int maxPower = 0;
 
-    public Group36_Party() {
+    public Agent36() {
+        super();
     }
 
-    public Group36_Party(Reporter reporter) {
-        super(reporter); // for debugging
-    }
-
-    @Override
-    public void notifyChange(Inform info) {
-        // TODO
-    }
-
-    @Override
-    public Capabilities getCapabilities() {
-        return new Capabilities(
-                new HashSet<>(Collections.singletonList("MOPAC")));
+    public Agent36(Reporter reporter) {
+        super(reporter);
     }
 
     @Override
     public String getDescription() {
-        // TODO
-        return "";
+        return "Party for group 36 - adaptive reservation value based on weighted collective actions";
+    }
+
+    @Override
+    public Capabilities getCapabilities() {
+        // Supports MOPAC only, includes SAOP in order to be visible on the server
+        // (workaround for server bug).
+        return new Capabilities(new HashSet<>(Arrays.asList("MOPAC", "SAOP")));
+    }
+
+    @Override
+    public void notifyChange(Inform info) {
+        try {
+            if (info instanceof Settings) { // 0. setup
+                this.log(Level.INFO, "Settings setup");
+                Settings settings = (Settings) info;
+
+                this.partyid = settings.getID();
+                this.profileinterface = ProfileConnectionFactory.create(settings.getProfile().getURI(), getReporter());
+                this.progress = settings.getProgress();
+                this.issueCount = this.profileinterface.getProfile().getDomain().getIssues().size();
+
+                try {
+                    this.reservationValue = this.retrieveBidUtility(this.profileinterface.getProfile(),
+                            this.profileinterface.getProfile().getReservationBid());
+                    this.log(Level.INFO, "Retrieved reservation bit");
+                } catch (Exception e) {
+                    this.log(Level.INFO, "No reservation bit present");
+                }
+                this.getReporter().log(Level.INFO, "Settings setup complete");
+            } else if (info instanceof YourTurn) { // 1. Bidding phase
+                this.log(Level.INFO, "Bidding phase");
+                this.getConnection().send(this.makeOffer());
+            } else if (info instanceof Voting) { // 2. Voting phase
+                this.log(Level.INFO, "Voting phase");
+                this.getConnection().send(this.vote((Voting) info));
+            } else if (info instanceof OptIn) { // 3. OptIn phase
+                this.log(Level.INFO, "Opt-in phase");
+                this.getConnection().send(this.optIn((OptIn) info));
+
+                // Advance process once round is finished.
+                if (this.progress instanceof ProgressRounds) {
+                    this.progress = ((ProgressRounds) progress).advance();
+                    this.getReporter().log(Level.INFO, "Round number: " + ((ProgressRounds) this.progress).getCurrentRound());
+                }
+            } else if (info instanceof Finished) { // 4. Negotiation finished
+                this.log(Level.INFO, "Final ourcome: " + info);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to handle info", e);
+        }
     }
 
     /**
-     * Update {@link #progress}
+     * MOPaC Phase 1 - bidding | The agent will split the difference between it's
+     * reservation value in 4 and pick the bid that is the closest to the 3rd
+     * quarter of the split, being 3/4 'selfish'. If such a value does not exist,
+     * the agent returns a random offer.
      *
-     * @param info the received info. Used to determine if this is the last info
-     *             of the round
+     * @return our offer
      */
-    private void updateRound(Inform info) {
-        // TODO
+    private Offer makeOffer() throws IOException {
+        AllPartialBidsList bidspace = new AllPartialBidsList(this.profileinterface.getProfile().getDomain());
+        Bid bid = null;
+        double selectedUtility = 0;
+        double q3Value = ((3 + this.reservationValue) / 4);
+        this.log(Level.INFO, "Reservation value: " + this.reservationValue);
+        this.log(Level.INFO, "Q3 value: " + q3Value);
+
+        for (Bid possibleBid : bidspace) {
+            double utility = this.retrieveBidUtility(this.profileinterface.getProfile(), possibleBid);
+            if (utility > q3Value && (bid == null || selectedUtility > utility)) {
+                bid = possibleBid;
+                selectedUtility = utility;
+            }
+        }
+
+        if (bid == null) {
+            // Random offer
+            this.log(Level.INFO, "No suitable bid found, random offer");
+            long i = this.random.nextInt(bidspace.size().intValue());
+            bid = bidspace.get(BigInteger.valueOf(i));
+            return new Offer(this.partyid, bid);
+        } else {
+            this.log(Level.INFO, "Suitable bid found");
+            return new Offer(this.partyid, bid);
+        }
     }
 
     /**
-     * send our next offer
-     */
-    private void makeOffer() throws IOException {
-        // TODO
-    }
-
-    /**
+     * Checks whether or not a bid is good, which means the following: the bid is
+     * valid, the bid contains all the issues, and the utility of the bid is larger
+     * than the reservation value.
+     *
      * @param bid the bid to check
      * @return true iff bid is good for us.
      */
     private boolean isGood(Bid bid) {
-        // TODO
-        return false;
+        if (bid == null || bid.getIssues().size() < this.issueCount) {
+            return false;
+        } else {
+            Profile profile;
+            try {
+                profile = this.profileinterface.getProfile();
+            } catch (IOException e) {
+                throw new IllegalStateException(e);
+            }
+
+            if (profile instanceof UtilitySpace) {
+                return ((UtilitySpace) profile).getUtility(bid).doubleValue() > this.reservationValue;
+            } else if (profile instanceof PartialOrdering) {
+                return ((PartialOrdering) profile).isPreferredOrEqual(bid, profile.getReservationBid());
+            } else {
+                return false;
+            }
+        }
     }
 
     /**
-     * @param voting the {@link Voting} object containing the options
-     * @return our next Votes.
+     * MOPaC Phase 2 - voting | Returns a list of votes based on the minimum and
+     * maximum power values and the reservation value.
+     *
+     * @param voting the Voting object containing the options
+     * @return our votes.
      */
     private Votes vote(Voting voting) throws IOException {
-       // TODO
+        // Set the information regarding the powers involved
+        if (!this.arePowersSet) {
+            this.getReporter().log(Level.INFO, "Set powers");
+            this.powers = voting.getPowers();
+            this.minPower = this.getMinPower();
+            this.maxPower = this.powers.values().stream().reduce(0, Integer::sum);
+            this.log(Level.INFO, "Min power: " + this.minPower);
+            this.log(Level.INFO, "Max power: " + this.maxPower);
+            this.arePowersSet = true;
+        }
 
+        // Create our own votes
+        Set<Vote> votes = voting.getBids().stream().distinct().filter(offer -> isGood(offer.getBid())).map(
+                offer -> new Vote(this.partyid, offer.getBid(), this.minPower, 1 + Math.max(this.minPower, maxPower)))
+                .collect(Collectors.toSet());
+
+        this.lastVotes = new Votes(this.partyid, votes);
+
+        this.log(Level.INFO, "Number of votes: " + this.lastVotes.getVotes().size());
+
+        return this.lastVotes;
+    }
+
+    /**
+     * Computes the minimum acceptance power of the agent, which is the sum of the
+     * powers of the most powerful 50% parties.
+     *
+     * @return integer representing minimum power
+     */
+    private int getMinPower() {
+
+        List<Integer> list = new ArrayList<>(this.powers.values());
+        Collections.sort(list, Collections.reverseOrder());
+        int power = 0;
+        int toConsider = Integer.max(1, (int) (list.size() / 2));
+
+        for (int i = 0; i < toConsider; i++) {
+            power += list.get(i);
+        }
+        return power;
+    }
+
+    /**
+     * MOPaC Phase 3 - opting | The agent accepts all the previous bids and on top of that the bids for which
+     * there is a chance of forming a partial consensus.
+     *
+     * @param voting the Voting object containing the options
+     * @return our opt-in votes.
+     */
+    private Votes optIn(OptIn voting) throws IOException {
+        double weightedUtilities = 0;
+        double sumOfPowers = 0;
+
+        for (Integer value : this.powers.values()) {
+            sumOfPowers += value;
+        }
+
+        // Adjust the reservation value based on the offers of others
+        for (Votes votes : voting.getVotes()) {
+            double utilitySum = 0;
+            int voteCount = 0;
+
+            for (Vote vote : votes.getVotes()) {
+                double utility = this.retrieveBidUtility(this.profileinterface.getProfile(), vote.getBid());
+                utilitySum += utility;
+                voteCount += 1;
+            }
+
+            if (voteCount > 0) {
+                utilitySum /= voteCount;
+                weightedUtilities += utilitySum * (this.powers.get(votes.getActor()) / sumOfPowers);
+            }
+        }
+        this.reservationValue = this.reservationValue * (1 - FORGET_RATE) + FORGET_RATE * weightedUtilities;
+        this.log(Level.INFO, "Weighted utilities: " + weightedUtilities);
+        this.log(Level.INFO, "Reservation value: " + this.reservationValue);
+        Set<Bid> bids = new HashSet<>();
+
+        // Add the bids of the votes already voted for
+        for (Vote vote : this.lastVotes.getVotes()) {
+            bids.add(vote.getBid());
+        }
+        int maxPower = (int) (this.reservationValue * this.maxPower);
+
+        for (Votes _votes : voting.getVotes()) {
+            // For each new vote, add it if it's not in the set already and if either has a high probability of forming a consensus or if it is acceptable
+            for (Vote vote : _votes.getVotes()) {
+                if (!bids.contains(vote.getBid()) && (willFormConsensus(voting, vote.getBid(), this.minPower)
+                                                      || this.retrieveBidUtility(this.profileinterface.getProfile(),
+                        vote.getBid()) >= this.reservationValue)) {
+                    bids.add(vote.getBid());
+                }
+            }
+        }
+
+        this.log(Level.INFO, "Number if new votes: " + (bids.size() - this.lastVotes.getVotes().size()));
+
+        // Convert bids to votes
         Set<Vote> votes = new HashSet<>();
-        return new Votes(me, votes);
+        for (Bid bid : bids) {
+            votes.add(new Vote(this.partyid, bid, this.minPower, 1 + Math.max(this.minPower, maxPower)));
+        }
+        return new Votes(this.partyid, votes);
+    }
+
+    /**
+     * Checks whether a (partial) consensus will be formed on the bid. Checks if the
+     * sum of powers of the parties that voted for it is greater than a certain
+     * minimum threshold.
+     *
+     * @param optin    the votes in the opt in phase
+     * @param bid      the bid to check for
+     * @param minPower the minimum power for accepting the bid
+     * @return true if it will for consensus
+     */
+    private boolean willFormConsensus(OptIn optin, Bid bid, int minPower) {
+        int sumOfPowers = 0;
+
+        for (Votes votes : optin.getVotes()) {
+            for (Vote vote : votes.getVotes()) {
+                if (vote.getBid() == bid) {
+                    PartyId partyId = vote.getActor();
+                    sumOfPowers += this.powers.get(partyId);
+                    break;
+                }
+            }
+        }
+        return sumOfPowers >= minPower;
+    }
+
+    /**
+     * Returns the utility of a bid given a profile
+     *
+     * @param profile of the bidder
+     * @param bid
+     * @return double representing total utility
+     */
+    private double retrieveBidUtility(Profile profile, Bid bid) {
+        return ((UtilitySpace) profile).getUtility(bid).doubleValue();
+    }
+
+    private void log(Level level, String message) {
+        if(this.partyid != null) {
+            this.getReporter().log(level, this.partyid.getName() + " " + message);
+        }
+        else {
+            this.getReporter().log(level, message);
+        }
     }
 }
