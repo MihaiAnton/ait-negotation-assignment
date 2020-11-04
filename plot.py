@@ -516,6 +516,7 @@ for x in bids_profile3_day:
 
 
 #------------------------------#
+#------------------------------#
 numOfRounds = []
 
 count = 1
@@ -523,12 +524,26 @@ for x in bid_utilities_profile3:
     numOfRounds.append(count)
     count += 1
 
-plt.plot(numOfRounds, bid_utilities_profile1, linestyle='-', solid_joinstyle='miter')
-plt.plot(numOfRounds, bid_utilities_profile2, linestyle='-', solid_joinstyle='miter')
-plt.plot(numOfRounds, bid_utilities_profile3, linestyle='-', solid_joinstyle='miter')
-plt.axis([1, 10, 0, 1])
+utilityProduct = []
+
+#an array that will represent a line parallel to oX -> f(y) = max(utilityProduct)
+nashProduct = []
+
+for x, y, z in zip(bid_utilities_profile1, bid_utilities_profile2, bid_utilities_profile3):
+    utilityProduct.append(x * y * z)
+
+for x in utilityProduct:
+    nashProduct.append(max(utilityProduct))
+
+p1, = plt.plot(numOfRounds, bid_utilities_profile1, linestyle='-', solid_joinstyle='miter', label='Profile 1')
+p2, = plt.plot(numOfRounds, bid_utilities_profile2, linestyle='-', solid_joinstyle='miter', label='Profile 2')
+p3, = plt.plot(numOfRounds, bid_utilities_profile3, linestyle='-', solid_joinstyle='miter', label='Profile 3')
+p4, = plt.plot(numOfRounds, utilityProduct, linestyle='-', solid_joinstyle='miter', label='Utility Product')
+plt.axis([1, len(numOfRounds), 0, 1])
+p4, = plt.plot(numOfRounds, nashProduct, linestyle='-', solid_joinstyle='miter', label='Nash Product', color='black');
 plt.xticks(numOfRounds)
 plt.xlabel("Round")
 plt.ylabel("Utility")
 plt.grid()
+plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.05), ncol=3, fancybox=True, shadow=True)
 plt.show()
