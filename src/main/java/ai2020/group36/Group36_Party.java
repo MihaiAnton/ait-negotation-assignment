@@ -156,8 +156,12 @@ public class Group36_Party extends DefaultParty {
         if (bid == null) {
             // No suitable bid found, make a random offer.
             this.log(Level.FINEST, "No suitable bid found, random offer");
-            long i = this.random.nextInt(bidspace.size().intValue());
-            bid = bidspace.get(BigInteger.valueOf(i));
+            for(long i = 0 ; i<bidspace.size().longValue(); i ++){
+                if(bidspace.get(i).getIssues().size() == this.issueCount){
+                    bid = bidspace.get(BigInteger.valueOf(i));
+                }
+            }
+
             return new Offer(this.partyid, bid);
         } else {
             // Suitable bid found, make an offer with this bid.
