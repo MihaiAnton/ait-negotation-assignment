@@ -159,6 +159,7 @@ public class Group36_Party extends DefaultParty {
             for(long i = 0 ; i<bidspace.size().longValue(); i ++){
                 if(bidspace.get(i).getIssues().size() == this.issueCount){
                     bid = bidspace.get(BigInteger.valueOf(i));
+                    break;
                 }
             }
 
