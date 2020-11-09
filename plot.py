@@ -2,17 +2,29 @@ import matplotlib.pyplot as plt
 import json
 import re
 
-#change this to your path to JSON log file
-path_to_JSON_file = '/Users/stefanpetrescu/DELFT/AITechniques/Plot_Graphs/file.json'
+#change this to your path to JSON log file from GeniusWeb
+path_to_JSON_Session_Results = '/Users/stefanpetrescu/DELFT/AITechniques/Plot_Graphs/file.json'
+
+#change this to your path to JSON meeting profiles -> create a directory that has the json profiles tested on GeniusWeb
+path_to_profiles_folder = '/Users/stefanpetrescu/DELFT/AITechniques/Plot_Graphs/profileFiles'
+
 
 #------------------------------#
 #class for groupMeetingProfiles
 class Profile:
 
+    profileName_Public = ''
+    def __init__(self,profileName={}):  # constructor
+        self.profileName_Public = profileName
+    def set_profile_name(self,profileName):
+        self.profileName_Public = profileName
+    def get_profile_name(self):
+        return self.profileName_Public
+
     #day issue
     __day = '' 
     def __init__(self,day={}):  # constructor
-        self.__day = issueWeights
+        self.__day = day
     def set_day_utilities(self,day):        # function
         self.__day = day
     def get_day_utilities(self):
@@ -96,77 +108,138 @@ class Profile:
           return self.__issueWeights[2]
         if(issue == 'duration'):
           return self.__issueWeights[3]
+    
+    __utilitiesArray = ''
+    def __init__(self, utilitiesArray=[]):
+        self.__utilitiesArray = utilitiesArray
+    def append_utilitiesArray(self, utilitiesArray):
+        self.__utilitiesArray.append(utilitiesArray)
+    def get_utilitiesArray(self):
+        return self.__utilitiesArray
 #------------------------------#
 
-#------------------------------#
-#Profile 1
-profile1_days = [0.5, 0.4, 0.3, 0.2, 0.1] #Monday .. Friday
-profile1_location = [0.6, 0.8, 0.1, 0.4] #zoom, google, teams, jitsi
-profile1_time = [9, 0.2, 18, 1.0] #lowValue, lowUtility, highValue, highUtility
-profile1_duration = [10, 0.2, 120, 0.4] #lowValue, lowUtility, highValue, highUtility
-profile1_issueWeights = [0.1, 0.8, 0.05, 0.05] #day, time, location, duration
 
-profile1 = Profile()
-profile1.set_day_utilities(profile1_days)
-profile1.set_location_utilites(profile1_location)
-profile1.set_time_utilites(profile1_time)
-profile1.set_duration_utilites(profile1_duration)
-profile1.set_issueWeights(profile1_issueWeights)
-print("\nRelevant Data Profile 1:")
-print("day_utilities: " + str(profile1.get_day_utilities()))
-print("location_utilities: " + str(profile1.get_location_utilities()))
-print("time_utilities: " + str(profile1.get_time()))
-print("duration_utilities: " + str(profile1.get_duration_utilities()))
-print("issueWeights: " + str(profile1.get_issueWeights()) + "\n")
-#------------------------------#
 
-#------------------------------#
-#Profile 2
-profile2_days = [0.5, 0.2, 0.3, 0.8, 0.2] #Monday .. Friday
-profile2_location = [0.2, 0.1, 0.1, 0.1] #zoom, google, teams, jitsi
-profile2_time = [9, 0.8, 18, 1.0] #lowValue, lowUtility, highValue, highUtility
-profile2_duration = [10, 0.2, 120, 0.4] #lowValue, lowUtility, highValue, highUtility
-profile2_issueWeights = [0.2, 0.4, 0.2, 0.2] #day, time, location, duration
 
-profile2 = Profile()
-profile2.set_day_utilities(profile2_days)
-profile2.set_location_utilites(profile2_location)
-profile2.set_time_utilites(profile2_time)
-profile2.set_duration_utilites(profile2_duration)
-profile2.set_issueWeights(profile2_issueWeights)
-print("\nRelevant Data Profile 2:")
-print("day_utilities: " + str(profile2.get_day_utilities()))
-print("location_utilities: " + str(profile2.get_location_utilities()))
-print("time_utilities: " + str(profile2.get_time()))
-print("duration_utilities: " + str(profile2.get_duration_utilities()))
-print("issueWeights: " + str(profile2.get_issueWeights()) + "\n")
-#------------------------------#
 
-#------------------------------#
-#Profile 3
-profile3_days = [0.5, 0.1, 0.3, 0.7, 0.1] #Monday .. Friday
-profile3_location = [0.6, 0.8, 0.1, 0.4] #zoom, google, teams, jitsi
-profile3_time = [9, 0.9, 18, 1.0] #lowValue, lowUtility, highValue, highUtility
-profile3_duration = [10, 0.2, 120, 0.4] #lowValue, lowUtility, highValue, highUtility
-profile3_issueWeights = [0.1, 0.2, 0.2, 0.5] #day, time, location, duration
 
-profile3 = Profile()
-profile3.set_day_utilities(profile3_days)
-profile3.set_location_utilites(profile3_location)
-profile3.set_time_utilites(profile3_time)
-profile3.set_duration_utilites(profile3_duration)
-profile3.set_issueWeights(profile3_issueWeights)
-print("\nRelevant Data Profile 3:")
-print("day_utilities: " + str(profile3.get_day_utilities()))
-print("location_utilities: " + str(profile3.get_location_utilities()))
-print("time_utilities: " + str(profile3.get_time()))
-print("duration_utilities: " + str(profile3.get_duration_utilities()))
-print("issueWeights: " + str(profile3.get_issueWeights()) + "\n")
-#------------------------------#
+jsonFiles = []
 
-#------------------------------#
+import os
+for file in os.listdir(path_to_profiles_folder):
+    if file.endswith(".json"):
+        print(os.path.join(path_to_profiles_folder, file))
+        jsonFiles.append(os.path.join(path_to_profiles_folder, file))
+
+#all json information for profiles analyzed
+profileFilesData = []
+jsonProfileFiles = []
+
+profilesObjects = []
+
+count = 0
+for jsonProfileFile in jsonFiles:
+  with open(jsonFiles[count]) as f:
+    profileFilesData.append(json.load(f))
+    jsonProfileFiles.append(profileFilesData[count])
+    count += 1
+#/Users/stefanpetrescu/DELFT/AITechniques/Plot_Graphs/profileFiles
+
+
+count = 0
+for jsonProfileFile in jsonProfileFiles:
+
+  profile = Profile()
+  profile.set_profile_name(jsonProfileFiles[count]['LinearAdditiveUtilitySpace']['name'])
+  print(jsonProfileFiles[count]['LinearAdditiveUtilitySpace']['name'])
+
+  #compute day issues
+  dayString = str(jsonProfileFiles[count]['LinearAdditiveUtilitySpace']['issueUtilities']['day']['discreteutils']['valueUtilities'])
+  monday = re.search('Monday(.+?),', dayString)
+  tuesday = re.search('Tuesday(.+?),', dayString)
+  wednesday = re.search('Wednesday(.+?),', dayString)
+  thursday = re.search('Thursday(.+?),', dayString)
+  friday = re.search('Fri(.+?)}', dayString)
+
+  mondayUtil = str(monday.group(1))[3:len(monday.group(1))]
+  tuesdayUtil = str(tuesday.group(1))[3:len(tuesday.group(1))]
+  wednesdayUtil = str(wednesday.group(1))[3:len(wednesday.group(1))]
+  thursdayUtil = str(thursday.group(1))[3:len(thursday.group(1))]
+  fridayUtil = str(friday.group(1))[6:len(friday.group(1))]
+
+  #print(dayUtilities)
+  profile.set_day_utilities([float(mondayUtil), float(tuesdayUtil), float(wednesdayUtil), float(thursdayUtil), float(fridayUtil)])
+
+  #compute time issues
+  timeString = str(jsonProfileFiles[count]['LinearAdditiveUtilitySpace']['issueUtilities']['time']['numberutils'])
+  lowValue = re.search('lowValue(.+?),', timeString)
+  lowUtility = re.search('lowUtility(.+?),', timeString)
+  highValue = re.search('highValue(.+?),', timeString)
+  highUtility = re.search('highUtility(.+?)}', timeString)
+
+  lowValueUtil = str(lowValue.group(1))[3:len(lowValue.group(1))]
+  lowUtilityUtil = str(lowUtility.group(1))[3:len(lowUtility.group(1))]
+  highValueUtil = str(highValue.group(1))[3:len(highValue.group(1))]
+  highUtilityUtil = str(highUtility.group(1))[3:len(highUtility.group(1))]
+  profile.set_time_utilites([float(lowValueUtil), float(lowUtilityUtil), float(highValueUtil), float(highUtilityUtil)])
+
+  #compute location issues
+  locationString = str(jsonProfileFiles[count]['LinearAdditiveUtilitySpace']['issueUtilities']['location']['discreteutils']['valueUtilities'])
+  zoom = re.search('zoom(.+?),', locationString)
+  google = re.search('meet(.+?),', locationString)
+  teams = re.search('teams(.+?),', locationString)
+  jitsi = re.search('jitsi(.+?)}', locationString)
+
+  zoomUtil = str(zoom.group(1))[3:len(zoom.group(1))]
+  googleUtil = str(google.group(1))[3:len(google.group(1))]
+  teamsUtil = str(teams.group(1))[3:len(teams.group(1))]
+  jitsiUtil = str(jitsi.group(1))[3:len(jitsi.group(1))]
+  profile.set_location_utilites([float(zoomUtil), float(googleUtil), float(teamsUtil), float(jitsiUtil)])
+
+  #compute duration issues
+  durationString = str(jsonProfileFiles[count]['LinearAdditiveUtilitySpace']['issueUtilities']['duration']['numberutils'])
+  lowValue = re.search('lowValue(.+?),', durationString)
+  lowUtility = re.search('lowUtility(.+?),', durationString)
+  highValue = re.search('highValue(.+?),', durationString)
+  highUtility = re.search('highUtility(.+?)}', durationString)
+
+  lowValueUtil = str(lowValue.group(1))[3:len(lowValue.group(1))]
+  lowUtilityUtil = str(lowUtility.group(1))[3:len(lowUtility.group(1))]
+  highValueUtil = str(highValue.group(1))[3:len(highValue.group(1))]
+  highUtilityUtil = str(highUtility.group(1))[3:len(highUtility.group(1))]
+  profile.set_duration_utilites([float(lowValueUtil), float(lowUtilityUtil), float(highValueUtil), float(highUtilityUtil)])
+
+  #compute issues weights
+  issuesString = str(jsonProfileFiles[count]['LinearAdditiveUtilitySpace']['issueWeights'])
+  day = re.search('day(.+?),', issuesString)
+  time = re.search('time(.+?),', issuesString)
+  location = re.search('location(.+?),', issuesString)
+  duration = re.search('duration(.+?)}', issuesString)
+
+  dayUtil = str(day.group(1))[3:len(day.group(1))]
+  timeUtil = str(time.group(1))[3:len(time.group(1))]
+  locationUtil = str(location.group(1))[3:len(location.group(1))]
+  durationUtil = str(duration.group(1))[3:len(duration.group(1))]
+  profile.set_issueWeights([float(dayUtil), float(timeUtil), float(locationUtil), float(durationUtil)])
+
+  #add curent JSON file to list of all objects profiles
+  profilesObjects.append(profile)
+
+  count += 1 
+
+
+count = 0
+for jsonProfileFile in jsonProfileFiles:
+  #print(str(profilesObjects[count].get_profile_name()) + " day: " + str(profilesObjects[count].get_day_utilities()))
+  count += 1
+
+profilesObjects = sorted(profilesObjects, key=lambda x: x.profileName_Public)
+
+
+
+
 #copy & paste JSON LOG file -> replace with your path
-with open(path_to_JSON_file) as f:
+with open(path_to_JSON_Session_Results) as f:
   data = json.load(f)
 
 # load the json data
@@ -190,360 +263,150 @@ for x in actions_array:
 #JSON key value we're interested in finding
 keyVal = 'offer'
 
-#list that contains all the profiles avalaible in the negotation
-profiles = [] #in this case there will be only 3 profiles
+profiles_during_negotiation = []
 
-# for x in offers_json_array:
-#   if keyVal in x:
-#     print(x)
-#------------------------------#
-
-#------------------------------#
-counter = 0
-#find profiles (for example: "party65_172_16_2_208") and decide which is 1st, 2md, and 3rd in order to be able to map their respective issues & weights 
-for x in offers_json_array:
-  if keyVal in x:
-    counter = counter + 1
-
-    #find the name of the profiles
-    if(counter == 1): 
-      elems = re.findall(r'"(.*?)"', x)
-      print(re.findall(r'"(.*?)"', x))
-      profiles.append(elems[2])
-    if(counter == 2):
-      print()
-      elems = re.findall(r'"(.*?)"', x)
-      profiles.append(elems[2])
-    if(counter == 3):
-      print()
-      elems = re.findall(r'"(.*?)"', x)
-      profiles.append(elems[2])
-    if(counter >= 3):
-      break
-
-#order the names of the profiles: for example partyXXXXX1 < partyXXXXX2 < partyXXXXX3
-profiles.sort()
-
-#bids for profiles
-bids_profile1 = []
-bids_profile2 = []
-bids_profile3 = []
-
-#specific bids made by Profile 1
-bids_profile1_duration = []
-bids_profile1_location = []
-bids_profile1_time = []
-bids_profile1_day = []
-
-#specific bids made by Profile 2
-bids_profile2_duration = []
-bids_profile2_location = []
-bids_profile2_time = []
-bids_profile2_day = []
-
-#specific bids made by Profile 3
-bids_profile3_duration = []
-bids_profile3_location = []
-bids_profile3_time = []
-bids_profile3_day = []
-
-#overall utilities for every round for each profile
-bid_utilities_profile1 = []
-bid_utilities_profile2 = []
-bid_utilities_profile3 = []
-#------------------------------#
-
-#------------------------------#
 #add every bid that each profile made
 for x in offers_json_array:
   if keyVal in x:
-    #an offer looks like this: {"offer": {"actor": "party67_172_16_2_208", "bid": {"issuevalues": {"duration": 60, "location": "google meet", "day": "Monday"}}}}
     print(x)
-    #add element to profile 1
-    elems = re.findall(r'"(.*?)"', x) #with this we can tell if the current offer is made by Profile 1 || 2 || 3
-    if(elems[2] == profiles[0]): #elems[2] represents the profile name -> we check if it's profile 1
-      elems = re.findall(r'"bid": {(.*?)}', x)
-      elems[0] = elems[0].replace("{", "")
+    currentProfile = re.findall(r'"(.*?)"', x)
+    #print(re.findall(r'"(.*?)"', x))
+    if currentProfile[2] in profiles_during_negotiation:
+      continue
+    else:
+      profiles_during_negotiation.append(currentProfile[2])
 
-      #find durations bids of profile 1
-      elems = re.findall(r'"duration": (.*?),', x)
-      if not elems:
-        elems = re.findall(r'"duration": (.*?)}', x)
-        if not elems:
-          bids_profile1_duration.append(0)
-        else:
-          bids_profile1_duration.append(elems)
-      else:
-        bids_profile1_duration.append(elems)
-
-      #find location bids of profile 1
-      elems = re.findall(r'"location": "(.*?)"', x)
-      if not elems:
-        bids_profile1_location.append(0)
-      else:
-        bids_profile1_location.append(elems)
-      
-      #find time bids of profile 1
-      elems = re.findall(r'"time": (.*?),', x)
-      if not elems:
-        elems = re.findall(r'"time": (.*?)}', x)
-        if not elems:
-          bids_profile1_time.append(0)
-        else: 
-          bids_profile1_time.append(elems)
-      else:
-        bids_profile1_time.append(elems)
-
-      #find day bids of profile 1
-      elems = re.findall(r'"day": "(.*?)"', x)
-      if not elems:
-        bids_profile1_day.append(0)
-      else:
-        bids_profile1_day.append(elems)
-
-    elif (elems[2] == profiles[1]): 
-      elems = re.findall(r'"bid": {(.*?)}', x)
-      elems[0] = elems[0].replace("{", "")
-
-      #find durations bids of profile 2
-      elems = re.findall(r'"duration": (.*?),', x)
-      if not elems:
-        elems = re.findall(r'"duration": (.*?)}', x)
-        if not elems:
-          bids_profile2_duration.append(0)
-        else:
-          bids_profile2_duration.append(elems)
-      else:
-        bids_profile2_duration.append(elems)
-
-      #find location bids of profile 2
-      elems = re.findall(r'"location": "(.*?)"', x)
-      if not elems:
-        bids_profile2_location.append(0)
-      else:
-        bids_profile2_location.append(elems)
-      
-      #find time bids of profile 2
-      elems = re.findall(r'"time": (.*?),', x)
-      if not elems:
-        elems = re.findall(r'"time": (.*?)}', x)
-        if not elems:
-          bids_profile2_time.append(0)
-        else: 
-          bids_profile2_time.append(elems)
-      else:
-        bids_profile2_time.append(elems)
-
-      #find day bids of profile 2
-      elems = re.findall(r'"day": "(.*?)"', x)
-      if not elems:
-        bids_profile2_day.append(0)
-      else:
-        bids_profile2_day.append(elems)
-
-    else: 
-      elems = re.findall(r'"bid": {(.*?)}', x)
-      elems[0] = elems[0].replace("{", "")
-      
-      #find durations bids of profile 3
-      elems = re.findall(r'"duration": (.*?),', x)
-      if not elems:
-        elems = re.findall(r'"duration": (.*?)}', x)
-        if not elems:
-          bids_profile3_duration.append(0)
-        else:
-          bids_profile3_duration.append(elems)
-      else:
-        bids_profile3_duration.append(elems)
-
-      #find location bids of profile 3
-      elems = re.findall(r'"location": "(.*?)"', x)
-      if not elems:
-        bids_profile3_location.append(0)
-      else:
-        bids_profile3_location.append(elems)
-      
-      #find time bids of profile 3
-      elems = re.findall(r'"time": (.*?),', x)
-      if not elems:
-        elems = re.findall(r'"time": (.*?)}', x)
-        if not elems:
-          bids_profile3_time.append(0)
-        else: 
-          bids_profile3_time.append(elems)
-      else:
-        bids_profile3_time.append(elems)
-
-      #find day bids of profile 3
-      elems = re.findall(r'"day": "(.*?)"', x)
-      if not elems:
-        bids_profile3_day.append(0)
-      else:
-        bids_profile3_day.append(elems)
-#------------------------------#
-
-
-#------------------------------#
-#Up to this point we have: Every offer (bid) made by each profile & weights -> Now we compute the utilities for each profile, for each round
+profiles_during_negotiation.sort()
 
 count = 0
-print("Utilities for profile 1:")
-for x in bids_profile1_day:
+for x in profiles_during_negotiation:
+  print("\n\n\n")
+  print("Calculate round utilities for profile: " + str(profilesObjects[count].get_profile_name()) + " aliased by server as: " + str(x))
+  #print(str(profilesObjects[count].get_profile_name()) + " day: " + str(profilesObjects[count].get_day_utilities()))
+  for offer in offers_json_array:
+    if keyVal in offer:
+      currentProfile = re.findall(r'"(.*?)"', offer)
+      if currentProfile[2] == str(x):
+        print(offer)
+        # duration location time day
 
-  #check if for the current bid there exists a day option (yes -> list; no -> 0)
-  if(type(bids_profile1_day[count]) == list):
-    day = str(bids_profile1_day[count]).replace("['", "")
-    day = day.replace("']", "")
-  else:
-    day = 0
-  
-  #check if for the current bid there exists a location option (yes -> list; no -> 0)
-  if(type(bids_profile1_location[count]) == list):
-    location = str(bids_profile1_location[count]).replace("['", "")
-    location = location.replace("']", "")
-  else:
-    location = 0
+        #offer duration
+        offer_duration = 0
+        elems = re.findall(r'"duration": (.*?),', offer)
+        if not elems:
+          elems = re.findall(r'"duration": (.*?)}', offer)
+          if not elems:
+            offer_duration = 0
+          else:
+            offer_duration = elems
+        else:
+          offer_duration = elems
+        #print(offer_duration)
 
-  #check if for the current bid there exists a time option (yes -> list; no -> 0)
-  if(type(bids_profile1_time[count]) == list):
-    time = str(bids_profile1_time[count]).replace("['", "")
-    time = time.replace("']", "")
-  else:
-    time = 0
+        #offer time
+        offer_time = 0
+        elems = re.findall(r'"time": (.*?),', offer)
+        if not elems:
+          elems = re.findall(r'"time": (.*?)}', offer)
+          if not elems:
+            offer_time = 0
+          else:
+            offer_time = elems
+        else:
+          offer_time = elems
+        #print(offer_time)
 
-  #check if for the current bid there exists a duration option (yes -> list; no -> 0)
-  if(type(bids_profile1_duration[count]) == list):
-    duration = str(bids_profile1_duration[count]).replace("['", "")
-    duration = duration.replace("']", "")
-  else:
-    duration = 0  
-  #add utility for each round in order to plot later
-  bid_utilities_profile1.append(profile1.get_issueWeights_issues('day') * profile1.get_days_utilities(day) + 
-                                                                              profile1.get_issueWeights_issues('location') * profile1.get_locations_utilities(location) + 
-                                                                              profile1.get_issueWeights_issues('time') * profile1.get_time_utilities(float(time))+ 
-                                                                              profile1.get_issueWeights_issues('duration') * profile1.get_durations_utilities(float(duration)))
-  
+        #offer location
+        offer_location = 0
+        elems = re.findall(r'"location": "(.*?)"', offer)
+        if not elems:
+          offer_location = 0
+        else:
+          offer_location = elems
+        #print(offer_location)
+
+
+        #offer day
+        offer_day = 0
+        elems = re.findall(r'"day": "(.*?)"', offer)
+        if not elems:
+          offer_day = 0
+        else:
+          offer_day = elems
+        #print(offer_day)
+        #print(profilesObjects[count].get_days_utilities(offer_day))
+        
+
+
+        #check if for the current bid there exists a day option (yes -> list; no -> 0)
+        if(type(offer_day) == list):
+          day = str(offer_day).replace("['", "")
+          day = day.replace("']", "")
+          #print(day)
+        else:
+          day = 0
+        
+        #check if for the current bid there exists a location option (yes -> list; no -> 0)
+        if(type(offer_location) == list):
+          location = str(offer_location).replace("['", "")
+          location = location.replace("']", "")
+        else:
+          location = 0
+
+        #check if for the current bid there exists a time option (yes -> list; no -> 0)
+        if(type(offer_time) == list):
+          time = str(offer_time).replace("['", "")
+          time = time.replace("']", "")
+        else:
+          time = 0
+
+        #check if for the current bid there exists a duration option (yes -> list; no -> 0)
+        if(type(offer_duration) == list):
+          duration = str(offer_duration).replace("['", "")
+          duration = duration.replace("']", "")
+        else:
+          duration = 0  
+
+        bid = profilesObjects[count].get_days_utilities(day) * profilesObjects[count].get_issueWeights_issues('day') \
+            + profilesObjects[count].get_locations_utilities(location) * profilesObjects[count].get_issueWeights_issues('location') \
+            + profilesObjects[count].get_time_utilities(float(time)) * profilesObjects[count].get_issueWeights_issues('time') \
+            + profilesObjects[count].get_durations_utilities(float(duration)) * profilesObjects[count].get_issueWeights_issues('duration')
+        print("Current bid for: day = " + str(bid) + " for profile: " + str(profilesObjects[count].get_profile_name()))
+        profilesObjects[count].append_utilitiesArray(bid)
+        print(profilesObjects[count].get_utilitiesArray())
   count += 1
-#------------------------------#
+  
 
+  #print(x)
 
-#------------------------------#
+numOfOffers = 0
+for offer in offers_json_array:
+    if keyVal in offer:
+      numOfOffers += 1
+
+numOfRounds = numOfOffers/len(profilesObjects)
+
+rounds = []
+
+for x in range(int(numOfRounds)):
+  rounds.append(x+1)
+
 count = 0
-print("Utilities for profile 2:")
-for x in bids_profile2_day:
-
-  #check if for the current bid there exists a day option (yes -> list; no -> 0)
-  if(type(bids_profile2_day[count]) == list):
-    day = str(bids_profile2_day[count]).replace("['", "")
-    day = day.replace("']", "")
-  else:
-    day = 0
-  
-  #check if for the current bid there exists a location option (yes -> list; no -> 0)
-  if(type(bids_profile2_location[count]) == list):
-    location = str(bids_profile2_location[count]).replace("['", "")
-    location = location.replace("']", "")
-  else:
-    location = 0
-
-  #check if for the current bid there exists a time option (yes -> list; no -> 0)
-  if(type(bids_profile2_time[count]) == list):
-    time = str(bids_profile2_time[count]).replace("['", "")
-    time = time.replace("']", "")
-  else:
-    time = 0
-
-  #check if for the current bid there exists a duration option (yes -> list; no -> 0)
-  if(type(bids_profile2_duration[count]) == list):
-    duration = str(bids_profile2_duration[count]).replace("['", "")
-    duration = duration.replace("']", "")
-  else:
-    duration = 0  
-
-  #add utility for each round in order to plot later
-  bid_utilities_profile2.append(profile2.get_issueWeights_issues('day') * profile2.get_days_utilities(day) + 
-                                                                              profile2.get_issueWeights_issues('location') * profile2.get_locations_utilities(location) + 
-                                                                              profile2.get_issueWeights_issues('time') * profile2.get_time_utilities(float(time))+ 
-                                                                              profile2.get_issueWeights_issues('duration') * profile2.get_durations_utilities(float(duration)))
+for x in profilesObjects:
+  print("Object: " + str(x.get_profile_name()) + "has utility vector = " + str(x.get_utilitiesArray()))
+  print(len(profilesObjects))
+  print(rounds)
   count += 1
-#------------------------------#
 
-
-#------------------------------#
 count = 0
-print("Utilities for profile 3:")
-for x in bids_profile3_day:
+for x in profilesObjects:
+  plt.plot(rounds, x.get_utilitiesArray()[int(count):int(count+numOfRounds)], linestyle='-', solid_joinstyle='miter', label=x.get_profile_name())
+  count += numOfRounds
 
-  #check if for the current bid there exists a day option (yes -> list; no -> 0)
-  if(type(bids_profile3_day[count]) == list):
-    day = str(bids_profile3_day[count]).replace("['", "")
-    day = day.replace("']", "")
-  else:
-    day = 0
-  
-  #check if for the current bid there exists a location option (yes -> list; no -> 0)
-  if(type(bids_profile3_location[count]) == list):
-    location = str(bids_profile3_location[count]).replace("['", "")
-    location = location.replace("']", "")
-  else:
-    location = 0
-
-  #check if for the current bid there exists a time option (yes -> list; no -> 0)
-  if(type(bids_profile3_time[count]) == list):
-    time = str(bids_profile3_time[count]).replace("['", "")
-    time = time.replace("']", "")
-  else:
-    time = 0
-
-  #check if for the current bid there exists a duration option (yes -> list; no -> 0)
-  if(type(bids_profile3_duration[count]) == list):
-    duration = str(bids_profile3_duration[count]).replace("['", "")
-    duration = duration.replace("']", "")
-  else:
-    duration = 0  
-#   print("3_Round: " + str(count) + " utility: (only for day + location) = " + str(profile3.get_issueWeights_issues('day') * profile3.get_days_utilities(day) + 
-#                                                                               profile3.get_issueWeights_issues('location') * profile3.get_locations_utilities(location) + 
-#                                                                               profile3.get_issueWeights_issues('time') * profile3.get_time_utilities(float(time))+ 
-#                                                                               profile3.get_issueWeights_issues('duration') * profile3.get_durations_utilities(float(duration))))
-
-  #add utility for each round in order to plot later
-  bid_utilities_profile3.append(profile3.get_issueWeights_issues('day') * profile3.get_days_utilities(day) + 
-                                                                              profile3.get_issueWeights_issues('location') * profile3.get_locations_utilities(location) + 
-                                                                              profile3.get_issueWeights_issues('time') * profile3.get_time_utilities(float(time))+ 
-                                                                              profile3.get_issueWeights_issues('duration') * profile3.get_durations_utilities(float(duration)))
-  count += 1
-#------------------------------#
-
-
-#------------------------------#
-#------------------------------#
-numOfRounds = []
-
-count = 1
-for x in bid_utilities_profile3:
-    numOfRounds.append(count)
-    count += 1
-
-utilityProduct = []
-
-#an array that will represent a line parallel to oX -> f(y) = max(utilityProduct)
-nashProduct = []
-
-for x, y, z in zip(bid_utilities_profile1, bid_utilities_profile2, bid_utilities_profile3):
-    utilityProduct.append(x * y * z)
-
-for x in utilityProduct:
-    nashProduct.append(max(utilityProduct))
-
-p1, = plt.plot(numOfRounds, bid_utilities_profile1, linestyle='-', solid_joinstyle='miter', label='Profile 1')
-p2, = plt.plot(numOfRounds, bid_utilities_profile2, linestyle='-', solid_joinstyle='miter', label='Profile 2')
-p3, = plt.plot(numOfRounds, bid_utilities_profile3, linestyle='-', solid_joinstyle='miter', label='Profile 3')
-p4, = plt.plot(numOfRounds, utilityProduct, linestyle='-', solid_joinstyle='miter', label='Utility Product')
-plt.axis([1, len(numOfRounds), 0, 1])
-p4, = plt.plot(numOfRounds, nashProduct, linestyle='-', solid_joinstyle='miter', label='Nash Product', color='black');
-plt.xticks(numOfRounds)
+plt.xticks(rounds)
 plt.xlabel("Round")
 plt.ylabel("Utility")
+plt.axis([1, len(rounds), 0, 1])
 plt.grid()
 plt.legend(loc='upper center', bbox_to_anchor=(0.5, 1.05), ncol=3, fancybox=True, shadow=True)
 plt.show()
