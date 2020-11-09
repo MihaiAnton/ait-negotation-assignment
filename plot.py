@@ -109,13 +109,30 @@ class Profile:
         if(issue == 'duration'):
           return self.__issueWeights[3]
     
-    __utilitiesArray = ''
-    def __init__(self, utilitiesArray=[]):
+    __utilitiesArray = []
+    def __init__(self, utilitiesArray={}):
         self.__utilitiesArray = utilitiesArray
     def append_utilitiesArray(self, utilitiesArray):
-        self.__utilitiesArray.append(utilitiesArray)
+        if not self.__utilitiesArray:
+            self.__utilitiesArray = utilitiesArray
+        else:
+            self.__utilitiesArray = [self.__utilitiesArray, utilitiesArray]
     def get_utilitiesArray(self):
         return self.__utilitiesArray
+    def get_utilitiesArrayPlot(self):
+        stringUtilitiesArray = str(self.__utilitiesArray)
+        specialCharacters = "[]"
+        for char in specialCharacters:
+          stringUtilitiesArray = stringUtilitiesArray.replace(char, "")
+        
+        specialCharacters = " "
+        for char in specialCharacters:
+          stringUtilitiesArray = stringUtilitiesArray.replace(char, "")
+
+        utilities = stringUtilitiesArray.split(",")
+        for x in utilities:
+          x = float(x)
+        return utilities
 #------------------------------#
 
 
@@ -375,9 +392,6 @@ for x in profiles_during_negotiation:
         profilesObjects[count].append_utilitiesArray(bid)
         print(profilesObjects[count].get_utilitiesArray())
   count += 1
-  
-
-  #print(x)
 
 numOfOffers = 0
 for offer in offers_json_array:
@@ -394,14 +408,40 @@ for x in range(int(numOfRounds)):
 count = 0
 for x in profilesObjects:
   print("Object: " + str(x.get_profile_name()) + "has utility vector = " + str(x.get_utilitiesArray()))
+  print("NEW Object: " + str(x.get_profile_name()) + "has utility vector = " + str(x.get_utilitiesArrayPlot()))
   print(len(profilesObjects))
   print(rounds)
   count += 1
 
+utilityProduct = 1
+utilityProductToPlot = []
+
+for utility in range(int(numOfRounds)):
+    utilityProductToPlot.append(1)
+
 count = 0
 for x in profilesObjects:
-  plt.plot(rounds, x.get_utilitiesArray()[int(count):int(count+numOfRounds)], linestyle='-', solid_joinstyle='miter', label=x.get_profile_name())
+  list_of_floats = []
+  for item in x.get_utilitiesArrayPlot():
+    list_of_floats.append(float(item))
+  for utility in range(len(list_of_floats)):
+    utilityProductToPlot[utility] *= list_of_floats[utility]
+  plt.plot(rounds, list_of_floats, linestyle='-', solid_joinstyle='miter', label=x.get_profile_name())
   count += numOfRounds
+
+#plot product utilities
+plt.plot(rounds, utilityProductToPlot, linestyle='-', solid_joinstyle='miter', label="Utility Product")
+
+#plot nash product
+nashProduct = utilityProductToPlot
+maxValueNash = max(utilityProductToPlot)
+for utility in range(int(numOfRounds)):
+    nashProduct[utility] = maxValueNash
+plt.plot(rounds, nashProduct, linestyle='-', solid_joinstyle='miter', label="Nash Product")
+
+#print(utilityProductToPlot)
+
+
 
 plt.xticks(rounds)
 plt.xlabel("Round")
