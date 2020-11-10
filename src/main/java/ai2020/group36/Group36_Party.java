@@ -50,7 +50,7 @@ public class Group36_Party extends DefaultParty {
 	private int issueCount;
 	private final Random random = new Random();
 	private double reservationValue = 0.0;
-	private double FORGET_RATE = 0.2;
+	private double FORGET_RATE = 0.9;
 	private boolean arePowersSet = false;
 	private Map<PartyId, Integer> powers = new HashMap<>();
 	private int minPower = 0;
@@ -148,8 +148,12 @@ public class Group36_Party extends DefaultParty {
 		if (bid == null) {
 			// No suitable bid found, make a random offer.
 			this.log(Level.FINEST, "No suitable bid found, random offer");
-			long i = this.random.nextInt(bidspace.size().intValue());
-			bid = bidspace.get(BigInteger.valueOf(i));
+            for(long i = 0 ; i<bidspace.size().longValue(); i ++){
+                if(bidspace.get(i).getIssues().size() == this.issueCount){
+                    bid = bidspace.get(BigInteger.valueOf(i));
+                    break;
+                }
+            }
 			return new Offer(this.partyid, bid);
 		} else {
 			// Suitable bid found, make an offer with this bid.
