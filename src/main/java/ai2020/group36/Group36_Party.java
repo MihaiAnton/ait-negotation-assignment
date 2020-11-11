@@ -48,10 +48,8 @@ public class Group36_Party extends DefaultParty {
 	private Progress progress;
 	private Votes lastVotes;
 	private int issueCount;
-	private final Random random = new Random();
-	private double reservationValue = 0.0;
-	private double FORGET_RATE = 0.9;
-	private boolean arePowersSet = false;
+	private double reservationValue = 0.9;
+	private double FORGET_RATE = 0.1;
 	private Map<PartyId, Integer> powers = new HashMap<>();
 	private int minPower = 0;
 	private int maxPower = 0;
@@ -75,7 +73,7 @@ public class Group36_Party extends DefaultParty {
 	}
 
 	@Override
-	public void notifyChange(Inform info) {
+	public void notifyChange(Inform info) {	
 		try {
 			if (info instanceof Settings) { // 0. setup
 				this.log(Level.FINEST, "Settings setup");
@@ -200,32 +198,30 @@ public class Group36_Party extends DefaultParty {
 	 */
 	private Votes vote(Voting voting) throws IOException {
 		// Set the information regarding the powers involved.
-		if (!this.arePowersSet) {
-			this.getReporter().log(Level.FINEST, "Set powers");
-			this.powers = voting.getPowers();
-			this.minPower = this.getMinPower();
-			this.maxPower = this.powers.values().stream().reduce(0, Integer::sum);
-			this.log(Level.FINEST, "Min power: " + this.minPower);
-			this.log(Level.FINEST, "Max power: " + this.maxPower);
-			this.arePowersSet = true;
-		}
+		this.getReporter().log(Level.FINEST, "Set powers");
+		this.powers = voting.getPowers();
+		this.minPower = this.getMinPower();
+		this.maxPower = this.getSumOfPowers();
+		this.log(Level.FINEST, "Min power: " + this.minPower);
+		this.log(Level.FINEST, "Max power: " + this.maxPower);
 
 		// Create our own votes.
 		Set<Vote> votes = voting.getBids().stream().distinct().filter(offer -> isGood(offer.getBid())).map(
-				offer -> new Vote(this.partyid, offer.getBid(), this.minPower, 1 + Math.max(this.minPower, maxPower)))
+				offer -> new Vote(this.partyid, offer.getBid(), this.minPower, this.maxPower))
 				.collect(Collectors.toSet());
+
 
 		// Store our votes for the opt-in phase.
 		this.lastVotes = new Votes(this.partyid, votes);
 
 		this.log(Level.FINEST, "Number of votes: " + this.lastVotes.getVotes().size());
-
+		
 		return this.lastVotes;
 	}
 
 	/**
 	 * Computes the minimum acceptance power of the agent, which is the sum of the
-	 * powers of the most powerful 50% parties.
+	 * powers of the most powerful (reservationValue * 100)% parties.
 	 *
 	 * @return integer representing minimum power
 	 */
@@ -234,13 +230,21 @@ public class Group36_Party extends DefaultParty {
 		List<Integer> list = new ArrayList<>(this.powers.values());
 		Collections.sort(list, Collections.reverseOrder());
 
-		// Sum the upper halve of the list.
+		// Sum the upper part of the list.
 		int power = 0;
-		int toConsider = Integer.max(1, (int) (list.size() / 2));
-		for (int i = 0; i < toConsider; i++) {
+		for (int i = 0; i < this.reservationValue; i++) {
 			power += list.get(i);
 		}
 		return power;
+	}
+	
+	private int getSumOfPowers() {
+		int sum = 0;
+		
+		for (Integer value : this.powers.values()) {
+			sum += value;
+		}
+		return sum;
 	}
 
 	/**
@@ -252,12 +256,6 @@ public class Group36_Party extends DefaultParty {
 	 */
 	private Votes optIn(OptIn voting) throws IOException {
 		double weightedUtilities = 0;
-		double sumOfPowers = 0;
-
-		// Get the total sum of powers.
-		for (Integer value : this.powers.values()) {
-			sumOfPowers += value;
-		}
 
 		// Adjust the reservation value based on the offers of others.
 		for (Votes votes : voting.getVotes()) {
@@ -274,14 +272,15 @@ public class Group36_Party extends DefaultParty {
 			// Calculate the weighted utilities by multiplying the average utility with the
 			// relative weight of the agent.
 			if (voteCount > 0) {
-				weightedUtilities += (utilitySum / voteCount) * (this.powers.get(votes.getActor()) / sumOfPowers);
+				weightedUtilities += (utilitySum / voteCount) * ((double) this.powers.get(votes.getActor()) / this.getSumOfPowers());
 			}
 		}
+
 		// Change the reservation value using the weighted utilities.
 		this.reservationValue = this.reservationValue * (1 - FORGET_RATE) + FORGET_RATE * weightedUtilities;
-
+		
 		this.log(Level.FINEST, "Weighted utilities: " + weightedUtilities);
-		this.log(Level.FINEST, "Reservation value: " + this.reservationValue);
+		this.log(Level.FINEST, "New reservation value: " + this.reservationValue);
 
 		// Create a new set of bids that we want to vote on.
 		Set<Bid> bids = new HashSet<>();
@@ -293,12 +292,9 @@ public class Group36_Party extends DefaultParty {
 
 		for (Votes _votes : voting.getVotes()) {
 			// For each new vote, add it to the set of bids if it's not in the set already
-			// and if either has a high
-			// probability of forming a consensus or if it is acceptable.
+			// and if either has a high probability of forming a consensus or if it is acceptable.
 			for (Vote vote : _votes.getVotes()) {
-				if (!bids.contains(vote.getBid()) && (willFormConsensus(voting, vote.getBid(), this.minPower)
-						|| this.retrieveBidUtility(this.profileinterface.getProfile(),
-								vote.getBid()) >= this.reservationValue)) {
+				if (!bids.contains(vote.getBid()) && (willFormConsensus(voting, vote.getBid(), this.minPower) || this.isGood(vote.getBid()))) {
 					bids.add(vote.getBid());
 				}
 			}
@@ -307,14 +303,13 @@ public class Group36_Party extends DefaultParty {
 		this.log(Level.FINEST, "Number if new votes: " + (bids.size() - this.lastVotes.getVotes().size()));
 
 		// Convert bids to votes
-		int maxPower = (int) (this.reservationValue * this.maxPower);
 		Set<Vote> votes = new HashSet<>();
 		for (Bid bid : bids) {
-			votes.add(new Vote(this.partyid, bid, this.minPower, 1 + Math.max(this.minPower, maxPower)));
-		}
+			votes.add(new Vote(this.partyid, bid, this.minPower, this.maxPower));
+		}		
 		return new Votes(this.partyid, votes);
 	}
-
+	
 	/**
 	 * Checks whether a (partial) consensus will be formed on the bid. Checks if the
 	 * sum of powers of the parties that voted for it is greater than a certain
