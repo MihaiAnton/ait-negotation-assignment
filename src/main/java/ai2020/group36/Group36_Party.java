@@ -238,6 +238,11 @@ public class Group36_Party extends DefaultParty {
 		return power;
 	}
 	
+	/**
+	 * Computes the sum of the powers of all agents
+	 * 
+	 * @return integer representing the sum of powers
+	 */
 	private int getSumOfPowers() {
 		int sum = 0;
 		
