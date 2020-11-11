@@ -1,7 +1,6 @@
 package ai2020.group36;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -122,46 +121,29 @@ public class Group36_Party extends DefaultParty {
 
 	/**
 	 * MOPaC Phase 1 - bidding | The agent will split the difference between it's
-	 * reservation value in 4 and pick the bid that is the closest to the 3rd
-	 * quarter of the split, being 3/4 'selfish'. If such a value does not exist,
-	 * the agent returns a random offer.
+	 * reservation value in 3 and pick the bid that is the closest to the 2nd third 
+	 * of the split, being 2/3 'selfish'.
 	 *
 	 * @return our offer
 	 */
 	private Offer makeOffer() throws IOException {
 		AllPartialBidsList bidspace = new AllPartialBidsList(this.profileinterface.getProfile().getDomain());
-		Bid bid = null;
-		double selectedUtility = 0;
-		double q3Value = ((3 + this.reservationValue) / 4);
+		double splitValue = ((2 + this.reservationValue) / 3);
 		this.log(Level.FINEST, "Reservation value: " + this.reservationValue);
-		this.log(Level.FINEST, "Q3 value: " + q3Value);
+		this.log(Level.FINEST, "Split value: " + splitValue);
 
-		// If existing, find the bid in the possible bidspace that has the highest
-		// utility and has a utility higher
-		// than the q3Value.
-		for (Bid possibleBid : bidspace) {
-			double utility = this.retrieveBidUtility(this.profileinterface.getProfile(), possibleBid);
-			if (utility > q3Value && (bid == null || selectedUtility > utility)) {
-				bid = possibleBid;
-				selectedUtility = utility;
-			}
+		// Sort powers in descending order.
+		List<Bid> possibleBids = new ArrayList<>();
+		for (Bid possibleBid : bidspace)
+		{
+			possibleBids.add(possibleBid);
 		}
+		Collections.sort(possibleBids, new BidComparator((UtilitySpace) this.profileinterface.getProfile()).reversed());
 
-		if (bid == null) {
-			// No suitable bid found, we return the first full-issue bid.
-			this.log(Level.FINEST, "No suitable bid found, random offer");
-            for(long i = 0 ; i<bidspace.size().longValue(); i ++){
-                if(bidspace.get(i).getIssues().size() == this.issueCount){
-                    bid = bidspace.get(BigInteger.valueOf(i));
-                    break;
-                }
-            }
-			return new Offer(this.partyid, bid);
-		} else {
-			// Suitable bid found, make an offer with this bid.
-			this.log(Level.FINEST, "Suitable bid found");
-			return new Offer(this.partyid, bid);
-		}
+		int index = (int) Math.round(possibleBids.size() * splitValue);
+		
+		this.log(Level.FINEST, "Bid: " + possibleBids.get(index));
+		return new Offer(this.partyid, possibleBids.get(index));
 	}
 
 	/**
@@ -214,7 +196,6 @@ public class Group36_Party extends DefaultParty {
 				offer -> new Vote(this.partyid, offer.getBid(), this.minPower, this.maxPower))
 				.collect(Collectors.toSet());
 
-
 		// Store our votes for the opt-in phase.
 		this.lastVotes = new Votes(this.partyid, votes);
 
@@ -233,13 +214,14 @@ public class Group36_Party extends DefaultParty {
 		// Sort powers in descending order.
 		List<Integer> list = new ArrayList<>(this.powers.values());
 		Collections.sort(list, Collections.reverseOrder());
-
+		int index = (int) Math.round(this.reservationValue * list.size());
+		
 		// Sum the upper part of the list.
 		int power = 0;
-		for (int i = 0; i < this.reservationValue; i++) {
+		for (int i = 0; i < index; i++) {
 			power += list.get(i);
 		}
-		return power;
+		return Math.max(1, power);
 	}
 	
 	/**
@@ -255,15 +237,9 @@ public class Group36_Party extends DefaultParty {
 		}
 		return sum;
 	}
-
-	/**
-	 * MOPaC Phase 3 - opting | The agent accepts all the previous bids and on top
-	 * of that the bids for which there is a chance of forming a partial consensus.
-	 *
-	 * @param voting the Voting object containing the options
-	 * @return our opt-in votes.
-	 */
-	private Votes optIn(OptIn voting) throws IOException {
+	
+	public void UpdateReservationValue(OptIn voting) throws IOException
+	{
 		double weightedUtilities = 0;
 
 		// Adjust the reservation value based on the offers of others.
@@ -271,7 +247,7 @@ public class Group36_Party extends DefaultParty {
 			double utilitySum = 0;
 			int voteCount = 0;
 
-			// Sum the utilies and count the number of votes.
+			// Sum the utilities and count the number of votes.
 			for (Vote vote : votes.getVotes()) {
 				double utility = this.retrieveBidUtility(this.profileinterface.getProfile(), vote.getBid());
 				utilitySum += utility;
@@ -290,7 +266,19 @@ public class Group36_Party extends DefaultParty {
 		
 		this.log(Level.FINEST, "Weighted utilities: " + weightedUtilities);
 		this.log(Level.FINEST, "New reservation value: " + this.reservationValue);
+	}
 
+	/**
+	 * MOPaC Phase 3 - opting | The agent accepts all the previous bids and on top
+	 * of that the bids for which there is a chance of forming a partial consensus.
+	 *
+	 * @param voting the Voting object containing the options
+	 * @return our opt-in votes.
+	 */
+	private Votes optIn(OptIn voting) throws IOException {		
+		// Update reservation value.
+		this.UpdateReservationValue(voting);
+		
 		// Create a new set of bids that we want to vote on.
 		Set<Bid> bids = new HashSet<>();
 
@@ -308,7 +296,7 @@ public class Group36_Party extends DefaultParty {
 				}
 			}
 		}
-
+		this.log(Level.FINEST, "Number of votes: " + bids.size());
 		this.log(Level.FINEST, "Number if new votes: " + (bids.size() - this.lastVotes.getVotes().size()));
 
 		// Convert bids to votes
@@ -316,6 +304,7 @@ public class Group36_Party extends DefaultParty {
 		for (Bid bid : bids) {
 			votes.add(new Vote(this.partyid, bid, this.minPower, this.maxPower));
 		}		
+
 		return new Votes(this.partyid, votes);
 	}
 	
