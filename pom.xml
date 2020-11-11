@@ -3,9 +3,9 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>ai2020.group36</groupId>
-	<artifactId>Group36_Main</artifactId>
-	<version>1.5.5</version> <!-- must equal ${geniusweb.version} -->
+	<groupId>ait.parties</groupId>
+	<artifactId>Group36_Party</artifactId>
+	<version>1.5.6</version> <!-- must equal ${geniusweb.version} -->
 	<packaging>jar</packaging>
 
 
@@ -15,8 +15,8 @@
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<basedir>.</basedir>
 		<passwd>${env.ARTIFACTORY_PASS}</passwd>
-		<jackson-2-version>2.9.6</jackson-2-version>
-		<geniusweb.version>1.5.5</geniusweb.version>
+		<jackson-2-version>2.9.10</jackson-2-version>
+		<geniusweb.version>1.5.6</geniusweb.version>
 	</properties>
 
 	<distributionManagement>
@@ -31,19 +31,8 @@
 
 
 		<dependency>
-			<groupId>geniusweb</groupId>
-			<artifactId>party</artifactId>
-			<version>${geniusweb.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>geniusweb</groupId>
-			<artifactId>bidspace</artifactId>
-			<version>${geniusweb.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>geniusweb</groupId>
-			<artifactId>profileconnection</artifactId>
+			<groupId>geniusweb.exampleparties</groupId>
+			<artifactId>timedependentparty</artifactId>
 			<version>${geniusweb.version}</version>
 		</dependency>
 		<dependency>
@@ -51,57 +40,39 @@
 			<artifactId>logging</artifactId>
 			<version>1.0.0</version>
 		</dependency>
+
+		<dependency>
+			<groupId>geniusweb</groupId>
+			<artifactId>protocol</artifactId>
+			<version>${geniusweb.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>geniusweb</groupId>
+			<artifactId>party</artifactId>
+			<version>${geniusweb.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>geniusweb.exampleparties</groupId>
+			<artifactId>randomparty</artifactId>
+			<version>${geniusweb.version}</version>
+			<scope>test </scope>
+		</dependency>
+		<dependency>
+			<groupId>geniusweb.exampleparties</groupId>
+			<artifactId>comparebids</artifactId>
+			<version>${geniusweb.version}</version>
+			<scope>test </scope>
+		</dependency>
+		<dependency>
+			<groupId>geniusweb.exampleparties</groupId>
+			<artifactId>simpleshaop</artifactId>
+			<version>${geniusweb.version}</version>
+			<scope>test </scope>
+		</dependency>
 		<dependency>
 			<groupId>tudelft.utilities</groupId>
-			<artifactId>immutablelist</artifactId>
-			<version>1.1.1</version>
-		</dependency>
-
-		<!-- the core, which includes Streaming API, shared low-level abstractions
-			(but NOT data-binding) -->
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-core</artifactId>
-			<version>${jackson-2-version}</version>
-			<scope>test</scope>
-		</dependency>
-
-		<!-- Just the annotations; use this dependency if you want to attach annotations
-			to classes without connecting them to the code. -->
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-annotations</artifactId>
-			<version>${jackson-2-version}</version>
-			<scope>test</scope>
-		</dependency>
-
-		<!-- databinding; ObjectMapper, JsonNode and related classes are here -->
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-databind</artifactId>
-			<version>${jackson-2-version}</version>
-			<scope>test</scope>
-		</dependency>
-
-		<!-- smile (binary JSON). Other artifacts in this group do other formats. -->
-		<dependency>
-			<groupId>com.fasterxml.jackson.dataformat</groupId>
-			<artifactId>jackson-dataformat-smile</artifactId>
-			<version>${jackson-2-version}</version>
-			<scope>test</scope>
-		</dependency>
-		<!-- JAX-RS provider -->
-		<dependency>
-			<groupId>com.fasterxml.jackson.jaxrs</groupId>
-			<artifactId>jackson-jaxrs-json-provider</artifactId>
-			<version>${jackson-2-version}</version>
-			<scope>test</scope>
-		</dependency>
-		<!-- Support for JAX-B annotations as additional configuration -->
-		<dependency>
-			<groupId>com.fasterxml.jackson.module</groupId>
-			<artifactId>jackson-module-jaxb-annotations</artifactId>
-			<version>${jackson-2-version}</version>
+			<artifactId>junit</artifactId>
+			<version>1.0.2</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -117,10 +88,16 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>tudelft.utilities</groupId>
-			<artifactId>junit</artifactId>
-			<version>1.0.1</version>
-			<scope>test</scope>
+			<groupId>geniusweb</groupId>
+			<artifactId>profileconnection</artifactId>
+			<version>1.5.6</version>
+			<scope>compile</scope>
+		</dependency>
+		<dependency>
+			<groupId>geniusweb</groupId>
+			<artifactId>bidspace</artifactId>
+			<version>1.5.6</version>
+			<scope>compile</scope>
 		</dependency>
 
 	</dependencies>
@@ -160,7 +137,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
-				<version>3.1.0</version>
 				<executions>
 					<execution>
 						<id>attach-sources</id>
@@ -177,7 +153,7 @@
 				<configuration>
 					<archive>
 						<manifest>
-							<mainClass>ai2020.group36.Group36_Main</mainClass>
+							<mainClass>ai2020.group36.Group36_Party</mainClass>
 						</manifest>
 					</archive>
 				</configuration>
@@ -232,7 +208,7 @@
 						<manifest>
 							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
 							<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-							<mainClass>ai2020.group36.Group36_Main</mainClass>
+							<mainClass>ai2020.group36.Group36_Party</mainClass>
 						</manifest>
 					</archive>
 				</configuration>
