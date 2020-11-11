@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
@@ -48,8 +47,8 @@ public class Group36_Party extends DefaultParty {
 	private Progress progress;
 	private Votes lastVotes;
 	private int issueCount;
-	private double reservationValue = 0.9;
-	private double FORGET_RATE = 0.1;
+	private double reservationValue;
+	private double forgetRate;
 	private Map<PartyId, Integer> powers = new HashMap<>();
 	private int minPower = 0;
 	private int maxPower = 0;
@@ -64,7 +63,7 @@ public class Group36_Party extends DefaultParty {
 
 	@Override
 	public String getDescription() {
-		return "Party for group 36 - adaptive reservation value based on weighted collective actions";
+		return "Party for group 36 - adaptive reservation value based on weighted collective actions. Parameters: Double reservationValue default 0.9, Double forgetRate default 0.1.";
 	}
 
 	@Override
@@ -78,6 +77,11 @@ public class Group36_Party extends DefaultParty {
 			if (info instanceof Settings) { // 0. setup
 				this.log(Level.FINEST, "Settings setup");
 				Settings settings = (Settings) info;
+				
+				Object val = settings.getParameters().get("reservationValue");
+				this.reservationValue = (val instanceof Double) ? (Double) val : 0.9;
+				val = settings.getParameters().get("forgetRate");
+				this.forgetRate = (val instanceof Double) ? (Double) val : 0.1;
 
 				this.partyid = settings.getID();
 				this.profileinterface = ProfileConnectionFactory.create(settings.getProfile().getURI(), getReporter());
@@ -144,7 +148,7 @@ public class Group36_Party extends DefaultParty {
 		}
 
 		if (bid == null) {
-			// No suitable bid found, make a random offer.
+			// No suitable bid found, we return the first full-issue bid.
 			this.log(Level.FINEST, "No suitable bid found, random offer");
             for(long i = 0 ; i<bidspace.size().longValue(); i ++){
                 if(bidspace.get(i).getIssues().size() == this.issueCount){
@@ -282,7 +286,7 @@ public class Group36_Party extends DefaultParty {
 		}
 
 		// Change the reservation value using the weighted utilities.
-		this.reservationValue = this.reservationValue * (1 - FORGET_RATE) + FORGET_RATE * weightedUtilities;
+		this.reservationValue = this.reservationValue * (1 - forgetRate) + forgetRate * weightedUtilities;
 		
 		this.log(Level.FINEST, "Weighted utilities: " + weightedUtilities);
 		this.log(Level.FINEST, "New reservation value: " + this.reservationValue);
