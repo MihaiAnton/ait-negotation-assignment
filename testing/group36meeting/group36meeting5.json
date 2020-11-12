@@ -1,0 +1,86 @@
+{
+  "LinearAdditiveUtilitySpace": {
+    "name": "group36meeting5",
+    "issueUtilities": {
+      "day": {
+        "discreteutils": {
+          "valueUtilities": {
+            "Monday": 0.6,
+            "Tuesday": 0.8,
+            "Wednesday": 0.6,
+            "Thursday": 0.4,
+            "Friday": 0.2
+          }
+        }
+      },
+      "time": {
+        "numberutils": {
+          "lowValue": 9,
+          "lowUtility": 1.0,
+          "highValue": 18,
+          "highUtility": 0.2
+        }
+      },
+      "location": {
+        "discreteutils": {
+          "valueUtilities": {
+            "zoom": 0.2,
+            "google meet": 0.3,
+            "teams": 0.3,
+            "jitsi": 0.9
+          }
+        }
+      },
+      "duration": {
+        "numberutils": {
+          "lowValue": 10,
+          "lowUtility": 0.4,
+          "highValue": 120,
+          "highUtility": 0.8
+        }
+      }
+    },
+    "issueWeights": {
+      "day": 0.2,
+      "time": 0.3,
+      "location": 0.4,
+      "duration": 0.1
+    },
+    "domain": {
+      "name": "group36meeting",
+      "issuesValues": {
+        "day": {
+          "values": [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday"
+          ]
+        },
+        "time": {
+          "range": [
+            9,
+            18,
+            1
+          ]
+        },
+        "location": {
+          "values": [
+            "zoom",
+            "google meet",
+            "teams",
+            "jitsi"
+          ]
+        },
+        "duration": {
+          "range": [
+            10,
+            120,
+            10
+          ]
+        }
+      }
+    }
+  }
+}
