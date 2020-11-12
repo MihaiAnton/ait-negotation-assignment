@@ -138,10 +138,10 @@ public class Group36_Party extends DefaultParty {
 		{
 			possibleBids.add(possibleBid);
 		}
-		Collections.sort(possibleBids, new BidComparator((UtilitySpace) this.profileinterface.getProfile()).reversed());
+		Collections.sort(possibleBids, new BidComparator((UtilitySpace) this.profileinterface.getProfile()));
 
 		int index = (int) Math.round(possibleBids.size() * splitValue);
-		
+
 		this.log(Level.FINEST, "Bid: " + possibleBids.get(index));
 		return new Offer(this.partyid, possibleBids.get(index));
 	}
